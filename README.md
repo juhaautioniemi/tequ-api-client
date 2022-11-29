@@ -12,7 +12,7 @@ This repository is collection of useful Node-RED subflows to work with Computer 
 
 Tequ API documentation
 
-https://tequ-api.eu-de.mybluemix.net/
+https://api.tequ.fi/
 
 
 ### Before using subflows related to Computer Vision prepare your machine(s):
