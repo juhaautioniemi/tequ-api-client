@@ -45,7 +45,7 @@ Example how to use these subflows as a functional computer vision system
 | [IMG] Thumbnails            | 0.0.1           | Creates thumbnails of original image and annotated image. | <a href="subflows/img-thumbnails.json">json</a> |
 | [IMG] Crop detected object(s) | 0.0.1     | Creates thumbnails of original image and annotated image. | <a href="subflows/img-crop-detected-object.json">json</a> |
 | [API] Get Token             | 0.0.1           | Retrieve token from Tequ-API. | <a href="subflows/api-get-token.json">json</a> |
-| [API] Format data   | 0.0.1     | Format data from [IMG] annotate  <a href="subflows/api-format-data.json">json</a> |
+| [API] Format data   | 0.0.1     | Format data from [IMG] annotate | <a href="subflows/api-format-data.json">json</a> |
 | [API] Send image    | 0.0.1   | Send image to Tequ-API. Saves image to local filesystem if API is not available. | <a href="subflows/api-add-image.json">json</a> |
 | [API] Add video clip   | 0.0.1  | Send image to Tequ-API. Saves image to local filesystem if API is not available. | <a href="subflows/api-add-video.json">json</a> |
 | [API] Operation            | 0.0.1            | **N/A** | <a href="subflows/api-operation.json">json</a> |
