@@ -48,6 +48,9 @@ Most of these subflows have external dependencies, that will you need to install
 | [API] Add image            | 0.0.1            | Send image to Tequ-API. Saves image to local filesystem if API is not available. | <a href="subflows/api-add-image.json">json</a> |
 | [API] Add video clip       | 0.0.1            | Send image to Tequ-API. Saves image to local filesystem if API is not available. | <a href="subflows/api-add-video.json">json</a> |
 | [API] Operation            | 0.0.1            | **N/A** | <a href="subflows/api-operation.json">json</a> |
+| Pre-process [TF]           | 0.0.1            | Pre-process image for Triton Inference Server using tfjs-node-gpu | <a href="subflows/Pre-process [TF].json">json</a> 
+| Pre-process                | 0.0.1            | Pre-process image for Triton Inference Server using numjs and piscina | <a href="subflows/Pre-process.json">json</a> |
+
 
 
 *Remove folder "node_modules" from /.node-red/node_modules/@cloud-annotations/models-node-gpu
