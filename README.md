@@ -64,3 +64,4 @@ Example how to use these subflows as a functional computer vision system
 | example-ai-detect-v2      | 0.0.1           | Use [AI] Detect-v2 and [IMG] Annotate | <a href="flows/example-ai-detect-v2.json">json</a> |
 | example-ai-detect-sm      | 0.0.1           | Use [AI] Detect-sm and [IMG] Annotate | <a href="flows/example-ai-detect-sm.json">json</a> |
 | example-ai-detect-triton  | 0.0.1           | Use [AI] Detect-triton and [IMG] Annotate | <a href="flows/example-ai-detect-triton.json">json</a> |
+| example-receive-video-and-send  | 0.0.1           | Receive Videoclips and send to Tequ-API | <a href="flows/example-receive-video-and-send.json">json</a> |
