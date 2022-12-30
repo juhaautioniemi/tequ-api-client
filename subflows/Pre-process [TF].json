@@ -1,0 +1,96 @@
+[
+    {
+        "id": "8c76f2288b38ba3b",
+        "type": "subflow",
+        "name": "Pre-process [TF]",
+        "info": "",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 120,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "56f3f4890f12e6e8"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 460,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "56f3f4890f12e6e8",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {
+            "version": "0.0.1",
+            "author": "juha.autioniemi@lapinamk.fi",
+            "desc": "Pre-process data for Triton Inference Server.",
+            "license": "MIT"
+        },
+        "color": "#3FADB5",
+        "icon": "node-red/swap.svg",
+        "status": {
+            "x": 460,
+            "y": 140,
+            "wires": [
+                {
+                    "id": "7fef7fddbf14648d",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "56f3f4890f12e6e8",
+        "type": "function",
+        "z": "8c76f2288b38ba3b",
+        "name": "[TF] Image to Tensor",
+        "func": "const image = msg.payload;\nlet pre_process_time;\n\nasync function convert(input){\n    return tf.tidy(() => {\n        const tensor = tf.node.decodeJpeg(input, 3).expandDims(0);\n        const shape = tensor.shape;\n        return { \"tensor\": tensor, \"shape\": shape }\n    });\n}\n\ntry{\n    const start = Date.now();\n    const imageTensor = await convert(image);\n    const imageTensorBuffer = Buffer.from(imageTensor[\"tensor\"].dataSync());\n    const tensorBufferSize = imageTensorBuffer.length;\n\n    const inference_header = {\n        \"model_name\": \"test\",\n        \"inputs\": [\n            {\n                \"name\": \"input_tensor\",\n                \"shape\": imageTensor[\"shape\"],\n                \"datatype\": \"UINT8\",\n                \"parameters\": {\n                    \"binary_data_size\": tensorBufferSize\n                }\n            }\n        ],\n        \"outputs\": [\n            {\n                \"name\": \"detection_scores\",\n                \"parameters\": {\n                    \"binary_data\": false\n                }\n            },\n            {\n                \"name\": \"detection_boxes\",\n                \"parameters\": {\n                    \"binary_data\": false\n                }\n            },\n            {\n                \"name\": \"detection_classes\",\n                \"parameters\": {\n                    \"binary_data\": false\n                }\n            }\n        ]\n    }\n\n    const inference_header_buffer = Buffer.from(JSON.stringify(inference_header))\n    const inference_header_length = inference_header_buffer.length\n    let triton_request_data = Buffer.concat([inference_header_buffer, imageTensorBuffer])\n\n    msg.tensor = {\n        \"image\": image,\n        \"data\": triton_request_data,\n        \"tensor_shape\": imageTensor[\"shape\"],\n        \"inference_header_length\": inference_header_length,\n        \"image_tensor_buffer_length\": tensorBufferSize\n    }\n\n    imageTensor[\"tensor\"].dispose()\n    pre_process_time = Date.now() - start;\n    msg.data.properties.computer_vision.pre_process_ms = pre_process_time\n    node.status({ fill: \"green\", shape: \"dot\", text: pre_process_time + \" ms\" });\n    return msg;\n}\ncatch (e) {\n    node.warn(e)\n    node.status({ fill: \"red\", shape: \"dot\", text: \"Convert failed...\" });\n    node.error(\"Image to tensor conversion failed. Probably input is not an image buffer.\", msg);\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "// Code added here will be run when the\n// node is being stopped or re-deployed.\nconst model = context.get(\"savedmodel\")\ntf.dispose(model)\ncontext.set(\"model\", undefined)\ncontext.set(\"modelInfo\", undefined)",
+        "libs": [
+            {
+                "var": "tf",
+                "module": "@tensorflow/tfjs-node-gpu"
+            }
+        ],
+        "x": 280,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7fef7fddbf14648d",
+        "type": "status",
+        "z": "8c76f2288b38ba3b",
+        "name": "",
+        "scope": null,
+        "x": 320,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b890f618df61315c",
+        "type": "subflow:8c76f2288b38ba3b",
+        "z": "022e42e3f5d0335d",
+        "name": "",
+        "x": 490,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    }
+]
