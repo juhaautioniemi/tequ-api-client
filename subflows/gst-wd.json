@@ -1,0 +1,285 @@
+[
+    {
+        "id": "d9dd49bd747346d4",
+        "type": "subflow",
+        "name": "gst WD",
+        "info": "",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 80,
+                "y": 60,
+                "wires": [
+                    {
+                        "id": "4676b6d77fb4c9fd"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 840,
+                "y": 220,
+                "wires": [
+                    {
+                        "id": "67250f6441a6d8f2",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 780,
+                "y": 60,
+                "wires": [
+                    {
+                        "id": "4676b6d77fb4c9fd",
+                        "port": 1
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#3FADB5",
+        "inputLabels": [
+            "Stream data in"
+        ],
+        "outputLabels": [
+            "Restart cmd out",
+            ""
+        ],
+        "icon": "font-awesome/fa-search",
+        "status": {
+            "x": 780,
+            "y": 340,
+            "wires": [
+                {
+                    "id": "42e72deef2a5b5b1",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "4676b6d77fb4c9fd",
+        "type": "msg-speed",
+        "z": "d9dd49bd747346d4",
+        "name": "",
+        "frequency": "sec",
+        "interval": "5",
+        "estimation": false,
+        "ignore": false,
+        "pauseAtStartup": false,
+        "topicDependent": false,
+        "x": 210,
+        "y": 60,
+        "wires": [
+            [
+                "75a772553f72adc5"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "75a772553f72adc5",
+        "type": "switch",
+        "z": "d9dd49bd747346d4",
+        "name": "== 0",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 170,
+        "y": 160,
+        "wires": [
+            [
+                "48bd712e32556613"
+            ]
+        ]
+    },
+    {
+        "id": "48bd712e32556613",
+        "type": "delay",
+        "z": "d9dd49bd747346d4",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "minute",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 180,
+        "y": 220,
+        "wires": [
+            [
+                "10b1bb59b99fd89e"
+            ]
+        ]
+    },
+    {
+        "id": "10b1bb59b99fd89e",
+        "type": "trigger",
+        "z": "d9dd49bd747346d4",
+        "name": "",
+        "op1": "{\"topic\":\"restart\",\"payload\":\"ok\"}",
+        "op2": "",
+        "op1type": "json",
+        "op2type": "nul",
+        "duration": "5",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 380,
+        "y": 220,
+        "wires": [
+            [
+                "860b8a639262a949"
+            ]
+        ]
+    },
+    {
+        "id": "67250f6441a6d8f2",
+        "type": "change",
+        "z": "d9dd49bd747346d4",
+        "name": "restart",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "restart",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 650,
+        "y": 220,
+        "wires": [
+            [
+                "abcd5255fa959167"
+            ]
+        ]
+    },
+    {
+        "id": "abcd5255fa959167",
+        "type": "function",
+        "z": "d9dd49bd747346d4",
+        "name": "Restart",
+        "func": "node.status({fill:\"red\",shape:\"ring\",text:\"no data, restart\"});\nreturn msg;",
+        "outputs": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "42e72deef2a5b5b1",
+        "type": "status",
+        "z": "d9dd49bd747346d4",
+        "name": "",
+        "scope": [
+            "4676b6d77fb4c9fd",
+            "abcd5255fa959167"
+        ],
+        "x": 640,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "883688b62b7bec6b",
+        "type": "inject",
+        "z": "d9dd49bd747346d4",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 20,
+        "wires": [
+            [
+                "4676b6d77fb4c9fd"
+            ]
+        ]
+    },
+    {
+        "id": "860b8a639262a949",
+        "type": "delay",
+        "z": "d9dd49bd747346d4",
+        "name": "",
+        "pauseType": "random",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "5",
+        "randomLast": "25",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 520,
+        "y": 220,
+        "wires": [
+            [
+                "67250f6441a6d8f2"
+            ]
+        ]
+    },
+    {
+        "id": "ecf6867daa7efe37",
+        "type": "subflow:d9dd49bd747346d4",
+        "z": "0d2c119e1f2d1adf",
+        "name": "",
+        "x": 480,
+        "y": 80,
+        "wires": [
+            [
+                "3b4445143b5d37b1"
+            ],
+            [
+                "105f5bee0e3a36ca"
+            ]
+        ]
+    }
+]
