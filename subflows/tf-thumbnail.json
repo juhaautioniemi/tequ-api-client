@@ -1,0 +1,125 @@
+[
+    {
+        "id": "be2002a6440b92ca",
+        "type": "subflow",
+        "name": "Thumbnail [TF]",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 140,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "f3bfefdada214958"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 540,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "f3bfefdada214958",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "width",
+                "type": "num",
+                "value": "85",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "height",
+                "type": "num",
+                "value": "48",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "env"
+                        ]
+                    }
+                }
+            }
+        ],
+        "meta": {
+            "version": "0.0.1",
+            "author": "juha.autioniemi@lapinamk.fi",
+            "desc": "Create thumbnail using Tensorflow",
+            "license": "MIT"
+        },
+        "color": "#3FADB5",
+        "icon": "node-red-contrib-image-info/resolution.png",
+        "status": {
+            "x": 540,
+            "y": 180,
+            "wires": [
+                {
+                    "id": "3894124fc6e6fdb5",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "f3bfefdada214958",
+        "type": "function",
+        "z": "be2002a6440b92ca",
+        "name": "Create thumbnail",
+        "func": "async function resize(inputTensor, width, height) {\n    return tf.tidy(() => {\n        let resized = tf.image.resizeBilinear(inputTensor, [height, width])\n        resized = tf.reshape(resized, [height, width, 3])\n        return Promise.resolve(tf.node.encodeJpeg(resized));\n    });\n}\n\nasync function convert(input) {\n    return tf.tidy(() => {\n        const tensor = tf.node.decodeJpeg(input, 3).expandDims(0);\n        const shape = tensor.shape;\n        return tensor\n    });\n}\n\ntry{\n    let thumbnail_time_ms;\n    const image = msg.payload;\n    const start = Date.now();\n    const width = env.get(\"width\")\n    const height = env.get(\"height\")\n    const tensor = await convert(image)\n    const thumbnail = Buffer.from(await resize(tensor, width, height))\n    msg.data.properties.object.data.original.thumbnail = thumbnail\n    thumbnail_time_ms = Date.now() - start;\n    msg.data.properties.object.data.original.thumbnail_ms = thumbnail_time_ms;\n    node.status({ fill: \"green\", shape: \"dot\", text: thumbnail_time_ms + \" ms\" });\n    return msg;\n}\ncatch (e) {\n    node.warn(e)\n    node.status({ fill: \"red\", shape: \"dot\", text: \"Convert failed...\" });\n    node.error(\"Resizing failed. Probably input is not an image buffer.\", msg);\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "// Code added here will be run when the\n// node is being stopped or re-deployed.\nconst model = context.get(\"savedmodel\")\ntf.dispose(model)\ncontext.set(\"model\", undefined)\ncontext.set(\"modelInfo\", undefined)",
+        "libs": [
+            {
+                "var": "tf",
+                "module": "@tensorflow/tfjs-node-gpu"
+            }
+        ],
+        "x": 310,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3894124fc6e6fdb5",
+        "type": "status",
+        "z": "be2002a6440b92ca",
+        "name": "",
+        "scope": null,
+        "x": 340,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "38e04c2128abba83",
+        "type": "subflow:be2002a6440b92ca",
+        "z": "022e42e3f5d0335d",
+        "name": "",
+        "x": 420,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    }
+]
