@@ -53,6 +53,8 @@ Example how to use these subflows as a functional computer vision system
 | Pre-process [TF]           | 0.0.1            | Pre-process image for Triton Inference Server using tfjs-node-gpu | <a href="subflows/Pre-process [TF].json">json</a> 
 | Pre-process                | 0.0.1            | Pre-process image for Triton Inference Server using numjs and piscina | <a href="subflows/Pre-process.json">json</a> | Triton request | 0.0.1     | Send pre-processed image to Triton Inference Server | <a href="subflows/Triton%20request.json">json</a> 
 | Post-process | 0.0.1     | Post-process response from Triton request| <a href="subflows/Post%20process.json">json</a> 
+| gst jetson | 0.0.1     | Launch GStreamer pipeline to read data from Basler cameras | <a href="subflows/gst-jetson.json">json</a> 
+| gst wd | 0.0.1     | Watchdog to supervise that GStreamer pipeline is running | <a href="subflows/gst-wd.json">json</a> 
 
 ### Available example flows
 
