@@ -1,0 +1,274 @@
+[
+    {
+        "id": "1d53dbc5eea7ea9a",
+        "type": "subflow",
+        "name": "Post-process",
+        "info": "Post process result from Triton request.\r\n",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 100,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "e7a0f1f7d6b417c7"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 970,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "e7a0f1f7d6b417c7",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "model_name",
+                "type": "str",
+                "value": "ssd-example-model",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "server_url",
+                "type": "str",
+                "value": "localhost:8000",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "threshold",
+                "type": "num",
+                "value": "0.5",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "env"
+                        ]
+                    }
+                }
+            }
+        ],
+        "meta": {
+            "module": "tequ-triton-post-process",
+            "version": "0.0.1",
+            "author": "juha.autioniemi@lapinamk.fi",
+            "desc": "Post-process Triton request.",
+            "license": "MIT"
+        },
+        "color": "#3FADB5",
+        "inputLabels": [
+            "Triton request result in"
+        ],
+        "outputLabels": [
+            "Processed output"
+        ],
+        "icon": "font-awesome/fa-compress",
+        "status": {
+            "x": 740,
+            "y": 360,
+            "wires": [
+                {
+                    "id": "d7404663061978b4",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "e7a0f1f7d6b417c7",
+        "type": "function",
+        "z": "1d53dbc5eea7ea9a",
+        "name": "Post-process",
+        "func": "function chunk(arr, chunkSize) {\n    if (chunkSize <= 0) throw \"Invalid chunk size\";\n    var R = [];\n    for (var i = 0, len = arr.length; i < len; i += chunkSize)\n        R.push(arr.slice(i, i + chunkSize));\n    return R;\n}\n\ntry{\n    let ready = flow.get(\"ready\") || false;\n\n    if (ready){\n        \n        let start = Date.now()\n        let inference_result = msg.payload;\n        let results = [];\n        const modelName = env.get(\"model_name\")\n        const model = flow.get(modelName);\n        const labels = model.parameters.labels;\n        const metadata = model.parameters.metadata;\n        const ts = msg.ts;\n        let post_process_time = 0;\n        const threshold = env.get(\"threshold\")\n        msg.threshold = threshold;\n        const image_width = msg.data.properties.object.data.width;\n        const image_height = msg.data.properties.object.data.height;\n\n        let scores;\n        let boxes;\n        let names;\n        let newObject;\n\n        for(let i=0;i<(inference_result.outputs).length;i++){  \n            if(inference_result.outputs[i][\"name\"] == \"detection_scores\"){\n                scores = inference_result.outputs[i].data\n            }\n            else if(inference_result.outputs[i][\"name\"] == \"detection_boxes\"){\n                boxes = inference_result.outputs[i].data\n                boxes = chunk(boxes,4)       \n            }\n            else if(inference_result.outputs[i][\"name\"] == \"detection_classes\"){\n                names = inference_result.outputs[i].data \n            }\n        } \n\n        for (let i = 0; i < scores.length; i++) {\n            if (scores[i] > threshold) {\n                newObject = {\n                    \"bbox\":[\n                            boxes[i][1] * image_width,\n                            boxes[i][0] * image_height,\n                            (boxes[i][3] - boxes[i][1]) * image_width,\n                            (boxes[i][2] - boxes[i][0]) * image_height\n                    ],\n                    \"class\":labels[names[i]-1],\n                    \"label\":labels[names[i]-1],\n                    \"score\":scores[i],\n                    \"length_cm\":NaN\n                    }\n                results.push(newObject)\n            }\n        }\n\n        post_process_time = Date.now() - start;     \n\n        msg.data.properties.computer_vision.result = results;\n        msg.data.properties.computer_vision.model = modelName;\n        msg.data.properties.computer_vision.inference_time = msg.request_ms;\n        msg.data.properties.computer_vision.type = \"object detection\";\n        msg.data.properties.computer_vision.metadata = metadata;\n        msg.data.properties.computer_vision.labels = labels;\n        msg.data.properties.computer_vision.threshold = msg.threshold;\n        msg.data.properties.computer_vision.validated = false;\n        msg.data.properties.computer_vision.post_process_time = post_process_time;\n\n        msg.payload = msg.tensor.image;\n        delete msg.tensor;\n        delete msg.request_ms;\n\n        const objects_count = results.length\n\n        if (objects_count > 0 ){         \n            msg.objects_found = true            \n            node.status({ fill: \"blue\", shape: \"dot\", text: \"Objects found:\" + objects_count});\n            return msg;\n        }\n        else{\n            node.status({fill: \"red\", shape: \"dot\", text: \" No objects over threshold: \" +threshold});\n            return msg;\n        }\n        \n    }\n    else{\n        node.status({ fill: \"red\", shape: \"dot\", text: \"Modeldata is not loaded\"});\n        return null;\n    }\n}\ncatch(e){\n    node.error(\"Post process failed.\", msg);\n    return null;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8c114d808326c97a",
+        "type": "http request",
+        "z": "1d53dbc5eea7ea9a",
+        "name": "status request",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 500,
+        "y": 220,
+        "wires": [
+            [
+                "fda3912b50bf4048"
+            ]
+        ]
+    },
+    {
+        "id": "e11f5be28d1db89d",
+        "type": "function",
+        "z": "1d53dbc5eea7ea9a",
+        "name": "request",
+        "func": "let modelName = env.get(\"model_name\")\nlet serverUrl = env.get(\"server_url\")\n\nmsg.requestTimeout = 1000;\nmsg.method = \"GET\";\nmsg.url = serverUrl+\"/v2/models/\"+modelName+\"/config\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 220,
+        "wires": [
+            [
+                "8c114d808326c97a"
+            ]
+        ]
+    },
+    {
+        "id": "fda3912b50bf4048",
+        "type": "function",
+        "z": "1d53dbc5eea7ea9a",
+        "name": "status",
+        "func": "let statusCode = msg.statusCode;\nlet parsed_value;\nlet modelName = env.get(\"model_name\")\n\nif(statusCode == 200){\n    let model_data = msg.payload;\n    parsed_value = JSON.parse(model_data.parameters.metadata.string_value)\n    model_data.parameters.labels = parsed_value.labels\n    model_data.parameters.metadata = parsed_value.metadata\n    flow.set(\"ready\",true)  \n    node.status({fill:\"green\",shape:\"dot\",text:\" Model configuration loaded.\"});   \n    flow.set(modelName,model_data)  \n    return null;\n}\nelse{\n    flow.set(\"ready\",false)\n    node.status({fill:\"red\",shape:\"dot\",text:msg.statusCode+\": \"+\"Server is not ready or model not found.\"});   \n    return msg\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 670,
+        "y": 220,
+        "wires": [
+            [
+                "f74eb53d0139bc87"
+            ]
+        ]
+    },
+    {
+        "id": "45cd04e16fc72ab3",
+        "type": "inject",
+        "z": "1d53dbc5eea7ea9a",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "2",
+        "topic": "",
+        "payload": "ready",
+        "payloadType": "flow",
+        "x": 110,
+        "y": 220,
+        "wires": [
+            [
+                "e11f5be28d1db89d"
+            ]
+        ]
+    },
+    {
+        "id": "d7404663061978b4",
+        "type": "status",
+        "z": "1d53dbc5eea7ea9a",
+        "name": "",
+        "scope": [
+            "e7a0f1f7d6b417c7",
+            "fda3912b50bf4048"
+        ],
+        "x": 500,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f74eb53d0139bc87",
+        "type": "delay",
+        "z": "1d53dbc5eea7ea9a",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 120,
+        "y": 300,
+        "wires": [
+            [
+                "e11f5be28d1db89d"
+            ]
+        ]
+    },
+    {
+        "id": "c2d55c650ac8aedb",
+        "type": "subflow:1d53dbc5eea7ea9a",
+        "z": "022e42e3f5d0335d",
+        "name": "",
+        "env": [
+            {
+                "name": "server_url",
+                "value": "localhost:8010",
+                "type": "str"
+            },
+            {
+                "name": "threshold",
+                "value": "0.60",
+                "type": "num"
+            }
+        ],
+        "x": 970,
+        "y": 260,
+        "wires": [
+            [
+                "34ecaa830d9e5583"
+            ]
+        ]
+    }
+]
