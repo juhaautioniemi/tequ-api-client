@@ -1,0 +1,592 @@
+[
+    {
+        "id": "0c6e27962f6a2d15",
+        "type": "subflow",
+        "name": "[CAM] MJPEG stream ",
+        "info": "Provides MJPEG data stream to [AI] Detect subflows. \n\nIP-cameras with MJPEG support are compatible.\n\nTested with Basler BIP2-series cameras.\n\nstream_url:\nFor example, in Basler camera, URL is:\n- http://<ip>/cgi-bin/mjpeg?mode=live&stream=1&fps=5\n\nstream_id:\nThis parameter is id which is used to identify datasource in Tequ-API.\n\nhttps://tequ-api.eu-de-mybluemix.net",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 80,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "b1653f56a2383bd8"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1230,
+                "y": 140,
+                "wires": [
+                    {
+                        "id": "d747c1a3f852d5d5",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 1190,
+                "y": 200,
+                "wires": [
+                    {
+                        "id": "bbced33d8b96e7c4",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 1200,
+                "y": 260,
+                "wires": [
+                    {
+                        "id": "785ed00d72be5825",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "stream_url",
+                "type": "str",
+                "value": "",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "stream_id",
+                "type": "str",
+                "value": "",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "limited_stream_rate",
+                "type": "str",
+                "value": "1000",
+                "ui": {
+                    "type": "select",
+                    "opts": {
+                        "opts": [
+                            {
+                                "l": {
+                                    "en-US": "0.5 frames / s"
+                                },
+                                "v": "2000"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "1 frames / s"
+                                },
+                                "v": "1000"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "5 frames / s"
+                                },
+                                "v": "200"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "7.5 frames / s"
+                                },
+                                "v": "150"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "10 frames / s"
+                                },
+                                "v": "100"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "20 frames / s"
+                                },
+                                "v": "50"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "25 frames / s"
+                                },
+                                "v": "40"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "50 frames / s"
+                                },
+                                "v": "20"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "meta": {
+            "version": "0.0.1",
+            "author": "juha.autioniemi@lapinamk.fi",
+            "desc": "Provides MJPEG data stream to [AI] Detect subflows.",
+            "license": "MIT"
+        },
+        "color": "#A6BBCF",
+        "inputLabels": [
+            "Inject to start"
+        ],
+        "outputLabels": [
+            "Stream speed out [ frames / s]",
+            "Limited stream out",
+            "Full speed stream out"
+        ],
+        "icon": "font-awesome/fa-video-camera",
+        "status": {
+            "x": 1120,
+            "y": 320,
+            "wires": [
+                {
+                    "id": "b0f9cc90ac771f30",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "dc2a83762d1d2cf4",
+        "type": "multipart-decoder",
+        "z": "0c6e27962f6a2d15",
+        "name": "Datasource",
+        "ret": "bin",
+        "url": "",
+        "tls": "",
+        "delay": 0,
+        "maximum": "2000000",
+        "blockSize": 1,
+        "x": 350,
+        "y": 180,
+        "wires": [
+            [
+                "f84b961ac4d635eb"
+            ]
+        ]
+    },
+    {
+        "id": "f84b961ac4d635eb",
+        "type": "msg-speed",
+        "z": "0c6e27962f6a2d15",
+        "name": "Img / s",
+        "frequency": "sec",
+        "interval": 1,
+        "estimation": false,
+        "ignore": false,
+        "pauseAtStartup": false,
+        "topicDependent": false,
+        "x": 510,
+        "y": 180,
+        "wires": [
+            [
+                "e5814f3dc077582b",
+                "d747c1a3f852d5d5",
+                "6b3319b437c49d57"
+            ],
+            [
+                "9d72a5e58809bd62"
+            ]
+        ]
+    },
+    {
+        "id": "bbced33d8b96e7c4",
+        "type": "delay",
+        "z": "0c6e27962f6a2d15",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": true,
+        "outputs": 1,
+        "x": 930,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "35eb9d59e464ae82",
+        "type": "change",
+        "z": "0c6e27962f6a2d15",
+        "name": "stop",
+        "rules": [
+            {
+                "t": "set",
+                "p": "stop",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 190,
+        "y": 200,
+        "wires": [
+            [
+                "dc2a83762d1d2cf4"
+            ]
+        ]
+    },
+    {
+        "id": "b1653f56a2383bd8",
+        "type": "change",
+        "z": "0c6e27962f6a2d15",
+        "name": "start",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            },
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "stream_url",
+                "tot": "env"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "stream_id",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 190,
+        "y": 160,
+        "wires": [
+            [
+                "dc2a83762d1d2cf4"
+            ]
+        ]
+    },
+    {
+        "id": "f165902d7151edd0",
+        "type": "link in",
+        "z": "0c6e27962f6a2d15",
+        "name": "stop stream #2",
+        "links": [
+            "c02f86d149e039bd"
+        ],
+        "x": 95,
+        "y": 200,
+        "wires": [
+            [
+                "35eb9d59e464ae82"
+            ]
+        ]
+    },
+    {
+        "id": "561f2868edef7dfe",
+        "type": "link in",
+        "z": "0c6e27962f6a2d15",
+        "name": "start stream #2",
+        "links": [
+            "182d50152067afe6"
+        ],
+        "x": 95,
+        "y": 160,
+        "wires": [
+            [
+                "b1653f56a2383bd8"
+            ]
+        ]
+    },
+    {
+        "id": "e5814f3dc077582b",
+        "type": "switch",
+        "z": "0c6e27962f6a2d15",
+        "name": "== 0",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 670,
+        "y": 80,
+        "wires": [
+            [
+                "b943b8bf473f2d92"
+            ]
+        ]
+    },
+    {
+        "id": "c02f86d149e039bd",
+        "type": "link out",
+        "z": "0c6e27962f6a2d15",
+        "name": "stop cmd 2 out",
+        "links": [
+            "f165902d7151edd0"
+        ],
+        "x": 1155,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "add0032092ae9b84",
+        "type": "trigger",
+        "z": "0c6e27962f6a2d15",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "nul",
+        "op2type": "date",
+        "duration": "5",
+        "extend": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "outputs": 1,
+        "x": 1020,
+        "y": 80,
+        "wires": [
+            [
+                "182d50152067afe6"
+            ]
+        ]
+    },
+    {
+        "id": "182d50152067afe6",
+        "type": "link out",
+        "z": "0c6e27962f6a2d15",
+        "name": "trigger 2 out",
+        "links": [
+            "561f2868edef7dfe"
+        ],
+        "x": 1155,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "b943b8bf473f2d92",
+        "type": "delay",
+        "z": "0c6e27962f6a2d15",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "minute",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "outputs": 1,
+        "x": 830,
+        "y": 80,
+        "wires": [
+            [
+                "add0032092ae9b84",
+                "c02f86d149e039bd"
+            ]
+        ]
+    },
+    {
+        "id": "785ed00d72be5825",
+        "type": "function",
+        "z": "0c6e27962f6a2d15",
+        "name": "isBuffer?",
+        "func": "let timestamp = msg.next_timestamp;\nlet image = msg.payload;\nmsg.mimetype = \"image/jpeg\";\nlet fps = flow.get(\"speed\")\n\nif(Buffer.isBuffer(image)){\n    node.status({ fill: \"green\", shape: \"dot\", text: env.get(\"stream_id\") + \" | \"+fps+\"/s | \"+timestamp});  \n    msg.rate = env.get(\"limited_stream_rate\")\n    return msg;\n}\nelse{\n    node.status({fill:\"red\",shape:\"dot\",text:timestamp + \" Not an image\"});  \n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 240,
+        "wires": [
+            [
+                "bbced33d8b96e7c4"
+            ]
+        ]
+    },
+    {
+        "id": "d747c1a3f852d5d5",
+        "type": "change",
+        "z": "0c6e27962f6a2d15",
+        "name": "Set datasource to topic",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "stream_id",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 720,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b0f9cc90ac771f30",
+        "type": "status",
+        "z": "0c6e27962f6a2d15",
+        "name": "",
+        "scope": [
+            "785ed00d72be5825",
+            "dc2a83762d1d2cf4"
+        ],
+        "x": 680,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9d72a5e58809bd62",
+        "type": "moment",
+        "z": "0c6e27962f6a2d15",
+        "name": "set ts",
+        "topic": "",
+        "input": "",
+        "inputType": "date",
+        "inTz": "Europe/Kiev",
+        "adjAmount": 0,
+        "adjType": "days",
+        "adjDir": "add",
+        "format": "HH:mm:ss.SSS",
+        "locale": "en-US",
+        "output": "next_timestamp",
+        "outputType": "msg",
+        "outTz": "Europe/Kiev",
+        "x": 510,
+        "y": 240,
+        "wires": [
+            [
+                "785ed00d72be5825"
+            ]
+        ]
+    },
+    {
+        "id": "345084531e9409d3",
+        "type": "inject",
+        "z": "0c6e27962f6a2d15",
+        "name": "",
+        "props": [
+            {
+                "p": "rate",
+                "v": "limited_stream_rate",
+                "vt": "env"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "x": 690,
+        "y": 400,
+        "wires": [
+            [
+                "bbced33d8b96e7c4"
+            ]
+        ]
+    },
+    {
+        "id": "6b3319b437c49d57",
+        "type": "change",
+        "z": "0c6e27962f6a2d15",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "speed",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 420,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "057d950f30c8cccb",
+        "type": "subflow:0c6e27962f6a2d15",
+        "z": "f23215eab4f069a1",
+        "name": "40198132",
+        "env": [
+            {
+                "name": "stream_url",
+                "value": "http://192.168.86.121:1880/camera/id/40198132/stream/1",
+                "type": "str"
+            },
+            {
+                "name": "stream_id",
+                "value": "40198132",
+                "type": "str"
+            }
+        ],
+        "x": 300,
+        "y": 80,
+        "wires": [
+            [],
+            [],
+            [
+                "8d5da829b1cfd2ab"
+            ]
+        ]
+    }
+]
