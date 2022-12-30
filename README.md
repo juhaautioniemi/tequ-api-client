@@ -19,13 +19,13 @@ https://api.tequ.fi/
 
 - Windows 10: https://github.com/Lapland-UAS-Tequ/win10-nodered-tensorflow
 
-- Jetson Nano/NX: https://github.com/Lapland-UAS-Tequ/tequ-jetson-nodered-tensorflow/
+- Jetson: https://github.com/Lapland-UAS-Tequ/tequ-jetson-nodered-tensorflow/
 
 - RPI3/4: https://github.com/Lapland-UAS-Tequ/tequ-rpi-setup
 
 - NVIDIA Triton https://github.com/Lapland-UAS-Tequ/tequ-setup-triton-inference-server
 
-Most of these subflows have external dependencies, that will you need to install before you import flow to Node-RED.
+
 
 ### Available subflows
 
@@ -50,11 +50,6 @@ Most of these subflows have external dependencies, that will you need to install
 | Pre-process [TF]           | 0.0.1            | Pre-process image for Triton Inference Server using tfjs-node-gpu | <a href="subflows/Pre-process [TF].json">json</a> 
 | Pre-process                | 0.0.1            | Pre-process image for Triton Inference Server using numjs and piscina | <a href="subflows/Pre-process.json">json</a> | Triton request | 0.0.1     | Send pre-processed image to Triton Inference Server | <a href="subflows/Triton%20request.json">json</a> 
 | Post-process | 0.0.1     | Post-process response from Triton request| <a href="subflows/Post%20process.json">json</a> 
-
-### Subflows palette
-
-![alt text](
-https://github.com/Lapland-UAS-Tequ/tequ-api-client/blob/master/images/subflows.JPG "Subflows")
 
 ### Available example flows
 
