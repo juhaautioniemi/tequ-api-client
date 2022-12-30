@@ -1,0 +1,525 @@
+[
+    {
+        "id": "7575e3aa4ecc74e8",
+        "type": "subflow",
+        "name": "Triton request",
+        "info": "Sends request to NVIDIA Triton Inference Server.\r\n\r\nExpects \"msg.tensor\" to be present in input\r\n\r\n\r\n \"msg.tensor.data\" and \r\n\r\n\r\n\r\n",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 100,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "ed1c65d9af70029d"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1100,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "c17bc39d76f512bc",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "server_url",
+                "type": "str",
+                "value": "localhost:8000",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "model_name",
+                "type": "str",
+                "value": "tequ-fish-species-detection",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "request_timeout",
+                "type": "num",
+                "value": "10000",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "rate_limit_ms",
+                "type": "num",
+                "value": "0",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "env"
+                        ]
+                    }
+                }
+            }
+        ],
+        "meta": {
+            "module": "tequ-triton-request",
+            "version": "0.0.1",
+            "author": "juha.autioniemi@lapinamk.fi",
+            "desc": "Send request to Triton Inference server.",
+            "license": "MIT"
+        },
+        "color": "#3FADB5",
+        "icon": "font-awesome/fa-globe",
+        "status": {
+            "x": 1100,
+            "y": 180,
+            "wires": [
+                {
+                    "id": "3adf567f1b13d40e",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "d34dc68eb13b6f3a",
+        "type": "function",
+        "z": "7575e3aa4ecc74e8",
+        "name": "Triton request",
+        "func": "if(\"tensor\" in msg){\n    const serverUrl = env.get(\"server_url\");\n    const modelName = env.get(\"model_name\");\n    const requestTimeout = env.get(\"request_timeout\");\n    const tensor_data = msg.tensor.data;\n    const inference_header_length = msg.tensor.inference_header_length;\n\n    //Construct Triton Inference Server HTTP API message\n    msg.request_start = Date.now();\n    msg.payload = tensor_data\n    msg.method = \"POST\";\n    msg.requestTimeout = requestTimeout;\n    msg.url = serverUrl + \"/v2/models/\" + modelName + \"/infer\";\n    msg.headers = {\n        \"Content-Type\": \"application/octet-stream\",\n        \"Inference-Header-Content-Length\": inference_header_length,\n    };\n    return msg;\n}\nelse{\n    node.status({ fill: \"red\", shape: \"dot\", text: \"No msg.tensor in input msg\" });\n    node.error(\"No msg.tensor in input msg\", msg);\n    return null;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "// Code added here will be run when the\n// node is being stopped or re-deployed.\ncontext.set(\"piscina\",{})",
+        "libs": [
+            {
+                "var": "pis",
+                "module": "piscina"
+            },
+            {
+                "var": "fs",
+                "module": "fs"
+            },
+            {
+                "var": "zlib",
+                "module": "zlib"
+            },
+            {
+                "var": "os",
+                "module": "os"
+            },
+            {
+                "var": "process",
+                "module": "process"
+            },
+            {
+                "var": "path",
+                "module": "path"
+            }
+        ],
+        "x": 640,
+        "y": 100,
+        "wires": [
+            [
+                "060f5eb9676b7853"
+            ]
+        ]
+    },
+    {
+        "id": "060f5eb9676b7853",
+        "type": "http request",
+        "z": "7575e3aa4ecc74e8",
+        "name": "req",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": true,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 810,
+        "y": 100,
+        "wires": [
+            [
+                "c17bc39d76f512bc"
+            ]
+        ]
+    },
+    {
+        "id": "3adf567f1b13d40e",
+        "type": "status",
+        "z": "7575e3aa4ecc74e8",
+        "name": "",
+        "scope": [
+            "d34dc68eb13b6f3a",
+            "c17bc39d76f512bc",
+            "4b8ae80b1d9828ab",
+            "055be905570d6114"
+        ],
+        "x": 800,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c17bc39d76f512bc",
+        "type": "function",
+        "z": "7575e3aa4ecc74e8",
+        "name": "Process req",
+        "func": "let statuscode = msg.statusCode;\nlet request_ms = Date.now() - msg.request_start;\nlet color = \"\"\nlet rate_limit_ms = 0\nmsg.request_ms = request_ms\n\ntry{\n    rate_limit_ms = parseInt(env.get(\"rate_limit_ms\"))\n    \n}\ncatch(e){\n    //\n}\n\nif (statuscode == 200){\n    color = \"blue\"\n    delete msg.request_start;\n    delete msg.headers;\n    delete msg.statusCode;\n    delete msg.method;\n    delete msg.retry;\n    delete msg.url;\n    delete msg.responseUrl;\n    delete msg.requestTimeout;\n    delete msg.redirectList;\n    \n    if(rate_limit_ms === 0){\n        color = \"blue\"\n        node.status({\n            fill: color, shape: \"dot\", text: statuscode + \" | \" + request_ms + \" ms\"\n        }); \n    }\n    else{\n        color = \"yellow\"\n        const rate = Math.round(1000 / rate_limit_ms*100)/100\n        node.status({\n            fill: color, shape: \"dot\", text: statuscode + \" | \" + request_ms + \" ms | \" + rate+\" msg/s\"\n        }); \n    }\n    \n    return msg;\n}\n\nelse{\n    color = \"red\"\n    node.status({ fill: color, shape: \"dot\", text: statuscode + \" | \"+msg.payload.error});\n    node.error(\"Processing request failed\", msg);\n    return null;\n}   ",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 970,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "83fd92ab5e3ea3e2",
+        "type": "http request",
+        "z": "7575e3aa4ecc74e8",
+        "name": "status request",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 580,
+        "y": 320,
+        "wires": [
+            [
+                "055be905570d6114"
+            ]
+        ]
+    },
+    {
+        "id": "4b8ae80b1d9828ab",
+        "type": "function",
+        "z": "7575e3aa4ecc74e8",
+        "name": "request",
+        "func": "let modelName = env.get(\"model_name\")\nlet serverUrl = env.get(\"server_url\")\n\nmsg.requestTimeout = 1000;\nmsg.method = \"GET\";\nmsg.url = serverUrl+\"/v2/models/\"+modelName+\"/config\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 320,
+        "wires": [
+            [
+                "83fd92ab5e3ea3e2"
+            ]
+        ]
+    },
+    {
+        "id": "055be905570d6114",
+        "type": "function",
+        "z": "7575e3aa4ecc74e8",
+        "name": "status",
+        "func": "let statusCode = msg.statusCode;\nlet parsed_value;\nlet modelName = env.get(\"model_name\")\n\nif(statusCode == 200){\n    flow.set(\"ready\",true)  \n    node.status({fill:\"green\",shape:\"dot\",text:\" Server ready.\"});   \n    return msg;\n}\nelse{\n    flow.set(\"ready\",false)\n    node.status({fill:\"red\",shape:\"dot\",text:msg.statusCode+\": \"+\"Server is not ready or model not found.\"});   \n    return null\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f78558c1088542e8",
+        "type": "inject",
+        "z": "7575e3aa4ecc74e8",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "2",
+        "topic": "",
+        "payload": "ready",
+        "payloadType": "flow",
+        "x": 210,
+        "y": 320,
+        "wires": [
+            [
+                "4b8ae80b1d9828ab"
+            ]
+        ]
+    },
+    {
+        "id": "ed1c65d9af70029d",
+        "type": "switch",
+        "z": "7575e3aa4ecc74e8",
+        "name": "ready?",
+        "property": "ready",
+        "propertyType": "flow",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 210,
+        "y": 100,
+        "wires": [
+            [
+                "b4628fed2532c2bf"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "260c53c347a2e037",
+        "type": "change",
+        "z": "7575e3aa4ecc74e8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "ready",
+                "pt": "flow",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 420,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "755d88407aaca421",
+        "type": "inject",
+        "z": "7575e3aa4ecc74e8",
+        "name": "start",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.5",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 210,
+        "y": 380,
+        "wires": [
+            [
+                "260c53c347a2e037",
+                "27fd476164b4daa6"
+            ]
+        ]
+    },
+    {
+        "id": "b4628fed2532c2bf",
+        "type": "switch",
+        "z": "7575e3aa4ecc74e8",
+        "name": "rate limit?",
+        "property": "rate_limit_ms",
+        "propertyType": "env",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "num"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 220,
+        "y": 160,
+        "wires": [
+            [
+                "d34dc68eb13b6f3a"
+            ],
+            [
+                "3c90883006a3285b"
+            ]
+        ]
+    },
+    {
+        "id": "0fedabf0c43f7be0",
+        "type": "delay",
+        "z": "7575e3aa4ecc74e8",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": true,
+        "outputs": 1,
+        "x": 410,
+        "y": 220,
+        "wires": [
+            [
+                "d34dc68eb13b6f3a"
+            ]
+        ]
+    },
+    {
+        "id": "3c90883006a3285b",
+        "type": "change",
+        "z": "7575e3aa4ecc74e8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "rate",
+                "pt": "msg",
+                "to": "rate_limit_ms",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 230,
+        "y": 220,
+        "wires": [
+            [
+                "0fedabf0c43f7be0"
+            ]
+        ]
+    },
+    {
+        "id": "27fd476164b4daa6",
+        "type": "change",
+        "z": "7575e3aa4ecc74e8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "busy",
+                "pt": "flow",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 410,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9449dd0dfca7038a",
+        "type": "subflow:7575e3aa4ecc74e8",
+        "z": "022e42e3f5d0335d",
+        "name": "",
+        "env": [
+            {
+                "name": "server_url",
+                "value": "localhost:8010",
+                "type": "str"
+            },
+            {
+                "name": "model_name",
+                "value": "ssd-example-model",
+                "type": "str"
+            },
+            {
+                "name": "request_timeout",
+                "value": "5000",
+                "type": "num"
+            },
+            {
+                "name": "rate_limit_ms",
+                "value": "",
+                "type": "num"
+            }
+        ],
+        "x": 720,
+        "y": 140,
+        "wires": [
+            [
+                "5719870bc4a65e0e"
+            ]
+        ]
+    }
+]
