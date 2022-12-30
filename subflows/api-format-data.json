@@ -1,0 +1,141 @@
+[
+    {
+        "id": "46449b9b5d4423c0",
+        "type": "subflow",
+        "name": "Format for Tequ-API",
+        "info": "",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 140,
+                "y": 200,
+                "wires": [
+                    {
+                        "id": "becb3b666094136d"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 750,
+                "y": 200,
+                "wires": [
+                    {
+                        "id": "d48797bbbe9dbfbe",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "enable",
+                "type": "bool",
+                "value": "true",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "bool",
+                            "env"
+                        ]
+                    }
+                }
+            }
+        ],
+        "meta": {
+            "version": "0.0.1",
+            "author": "juha.autioniemi@lapinamk.fi",
+            "desc": "Format payload from [AI]Annotate to Tequ-API compatible format. Enable / disable sending to API.",
+            "license": "MIT"
+        },
+        "color": "#FFCC66",
+        "inputLabels": [
+            "Connect to \"[IMG] Annotate\" output "
+        ],
+        "outputLabels": [
+            "Connect to \"[API] Send image\" input"
+        ],
+        "icon": "node-red/sort.svg",
+        "status": {
+            "x": 620,
+            "y": 280,
+            "wires": [
+                {
+                    "id": "d2944af8bc584354",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "d48797bbbe9dbfbe",
+        "type": "function",
+        "z": "46449b9b5d4423c0",
+        "name": "Format payload",
+        "func": "const newMsg = {\n    \"payload\":msg.data\n    }\nreturn newMsg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "becb3b666094136d",
+        "type": "function",
+        "z": "46449b9b5d4423c0",
+        "name": "enabled?",
+        "func": "const enabled = env.get(\"enable\")\nconst objects_found = msg.objects_found;\n\nif(enabled){\n    \n    if (objects_found){\n        node.status({ fill: \"green\", shape: \"dot\", text: \"Tequ-API enabled\" });\n        return msg;\n    }\n    else{\n        node.status({ fill: \"yellow\", shape: \"dot\", text: \"Tequ-API enabled, but no annotated objects\" });\n        return null;\n    } \n}\nelse{\n    node.status({ fill: \"red\", shape: \"dot\", text: \"Tequ-API disabled\" });\n    return null;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 200,
+        "wires": [
+            [
+                "d48797bbbe9dbfbe"
+            ]
+        ]
+    },
+    {
+        "id": "d2944af8bc584354",
+        "type": "status",
+        "z": "46449b9b5d4423c0",
+        "name": "",
+        "scope": null,
+        "x": 480,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4023d5db6ba5f3b1",
+        "type": "subflow:46449b9b5d4423c0",
+        "z": "7509ad250bd80ba5",
+        "name": "[API] Format data",
+        "env": [
+            {
+                "name": "enable",
+                "value": "false",
+                "type": "bool"
+            }
+        ],
+        "x": 370,
+        "y": 100,
+        "wires": [
+            [
+                "3f74987cc3390fd3",
+                "bced97a88b57ae02"
+            ]
+        ]
+    }
+]
