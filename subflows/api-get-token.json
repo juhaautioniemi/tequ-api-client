@@ -1,1 +1,314 @@
-[{"id":"ffeafac1.b0db18","type":"subflow","name":"[API] Get Token","info":"Set msg.topic \n\n\nUsername and password for login can also be configured in settings-file.\n\nprocess.env.client_email = \"email\";\nprocess.env.client_password = \"password\";\n\nPlease contact Tequ-API administrator to get credentials.\n\n[https://tequ-api.eu-de.mybluemix.net]()","category":"Tequ-API Client","in":[{"x":80,"y":140,"wires":[{"id":"50252e9e.d28d4"}]}],"out":[{"x":920,"y":140,"wires":[{"id":"c4734d48.7f0ff","port":0}]}],"env":[{"name":"client_email","type":"cred","ui":{"icon":"font-awesome/fa-user-o","type":"input","opts":{"types":["env","cred"]}}},{"name":"client_password","type":"cred","ui":{"icon":"font-awesome/fa-lock","type":"input","opts":{"types":["env","cred"]}}}],"meta":{"module":"node-red-contrib-tequ-api-token","version":"0.0.1","author":"juha.autioniemi@lapinamk.fi","desc":"Retrieves token from Tequ-API.","license":"MIT"},"color":"#3FADB5","icon":"node-red/envelope.svg","status":{"x":920,"y":220,"wires":[{"id":"6096db38.546e94","port":0}]}},{"id":"dfacae6d.01672","type":"function","z":"ffeafac1.b0db18","name":"App-ID Token","func":"if(msg.topic == \"force_update\"){\n    node.status({fill:\"yellow\",shape:\"dot\",text:\"Forced update.\"})\n}\n\nvar username = \"\";\nvar password = \"\";\n\nif( 'username' in msg){\n    username = msg.username;    \n}\nelse{\n    username = env.get(\"client_email\");      \n}\n\nif( 'password' in msg){\n    password = msg.password;    \n}\nelse{\n    password = env.get(\"client_password\");  \n}\n\nmsg.url      = \"https://tequ-api.eu-de.mybluemix.net/api/v1/token\"\nmsg.method   = 'POST';\n\nmsg.payload  = {\n    \"grant_type\":\"password\",\n    \"username\":username,\n    \"password\":password\n};\n\nmsg.headers  = {\n                \"Content-Type\": \"application/x-www-form-urlencoded\"\n};\n\n\nnode.warn(msg)\n\nreturn msg;","outputs":1,"noerr":0,"initialize":"","finalize":"","libs":[],"x":400,"y":140,"wires":[["bffe1286.5564"]]},{"id":"bffe1286.5564","type":"http request","z":"ffeafac1.b0db18","name":"","method":"use","ret":"obj","paytoqs":"ignore","url":"","tls":"","persist":false,"proxy":"","authType":"","x":590,"y":140,"wires":[["c4734d48.7f0ff"]]},{"id":"c4734d48.7f0ff","type":"function","z":"ffeafac1.b0db18","name":"Parse response","func":"if(msg.statusCode == 200){\n    var token = msg.payload.access_token;\n    var decoded = jwtDecode(token);\n    msg.payload = {\n        \"decoded\":decoded,\n        \"token\":token\n    }\n    node.status({fill:\"green\",shape:\"dot\",text:msg.statusCode+\" Token updated.\"})\n    return msg;\n}\nelse{\n     node.status({fill:\"red\",shape:\"dot\",text:msg.statusCode+\" Token update failed.\"})\n     return null;\n}","outputs":1,"noerr":0,"initialize":"","finalize":"","libs":[{"var":"jwtDecode","module":"jwt-decode"}],"x":780,"y":140,"wires":[[]]},{"id":"50252e9e.d28d4","type":"function","z":"ffeafac1.b0db18","name":"Check token","func":"if('topic' in msg){\n    if(msg.topic == \"force_login\"){\n        node.status({fill:\"yellow\",shape:\"dot\",text:\"Forced update.\"})  \n        return msg;\n    }\n}\n\nif(\"token\" in msg){\n    try{\n        jwt = jwtDecode(msg.token);\n    }\n    catch(err){\n        node.status({fill:\"red\",shape:\"dot\",text:err})\n        node.error(err,msg)\n        return null;\n    }\n    \n    time_left = jwt.exp - Math.round(new Date().getTime()/1000);\n    \n    if(time_left > 120){\n        //No need to login again\n        node.status({fill:\"green\",shape:\"dot\",text:\"TOKEN OK. \"+time_left+\" s left.\"})\n        return null;\n    }\n    else{\n        //Token is going to expire, login again\n        node.status({fill:\"red\",shape:\"dot\",text:\"Token expired. LOGIN again\"})\n        return msg;\n    }    \n}\nelse{\n    node.status({fill:\"red\",shape:\"dot\",text:\"Please supply token in 'msg.token'. Forcing update...\"})\n    return msg;\n}","outputs":1,"noerr":0,"initialize":"","finalize":"","libs":[{"var":"jwtDecode","module":"jwt-decode"}],"x":210,"y":140,"wires":[["dfacae6d.01672"]]},{"id":"6096db38.546e94","type":"status","z":"ffeafac1.b0db18","name":"","scope":["dfacae6d.01672","c4734d48.7f0ff","50252e9e.d28d4","c7a9b6c5ab5825f5"],"x":800,"y":220,"wires":[[]]},{"id":"eddfbfffa1c0160b","type":"subflow:ffeafac1.b0db18","z":"d994f01a5b816cf9","name":"","env":[{"name":"client_email","value":"client_email","type":"env"},{"name":"client_password","value":"client_password","type":"env"},{"name":"username","value":"username","type":"env"},{"name":"password","value":"password","type":"env"}],"x":740,"y":500,"wires":[[]]}]
+[
+    {
+        "id": "d0a8fa6ddbf311c2",
+        "type": "subflow",
+        "name": "[API] Get Token",
+        "info": "Username and password for login are configured in settings-file.\n\nprocess.env.client_email = \"email\";\nprocess.env.client_password = \"password\";\n\nPlease contact Tequ-API administrator to get credentials.\n\n[https://api.tequ.fi]()",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 80,
+                "y": 140,
+                "wires": [
+                    {
+                        "id": "386a9a683935141e"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1020,
+                "y": 300,
+                "wires": [
+                    {
+                        "id": "7a8f6a815b1d5ce8",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 1020,
+                "y": 140,
+                "wires": [
+                    {
+                        "id": "287a6538d9f1a587",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "username",
+                "type": "str",
+                "value": "client_email",
+                "ui": {
+                    "icon": "font-awesome/fa-user-o"
+                }
+            },
+            {
+                "name": "password",
+                "type": "str",
+                "value": "client_password",
+                "ui": {
+                    "icon": "font-awesome/fa-lock",
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str",
+                            "env",
+                            "cred"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "API_URL",
+                "type": "str",
+                "value": "https://api.tequ.fi"
+            }
+        ],
+        "meta": {
+            "license": "MIT"
+        },
+        "color": "#FFCC66",
+        "icon": "node-red/envelope.svg",
+        "status": {
+            "x": 1020,
+            "y": 360,
+            "wires": [
+                {
+                    "id": "608f9914d32cc6cc",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "ee92d6343982fd50",
+        "type": "function",
+        "z": "d0a8fa6ddbf311c2",
+        "name": "App-ID Token",
+        "func": "if(msg.topic == \"force_update\"){\n    node.status({fill:\"yellow\",shape:\"dot\",text:\"Forced update.\"})\n}\nelse{\n    node.status({fill:\"yellow\",shape:\"dot\",text:\"Updating token...\"})\n}\n\nlet username = env.get(\"username\");\nlet password = env.get(\"password\");\n\nmsg.url      =  env.get(\"API_URL\")+\"/api/v1/token\"\nmsg.method   = 'POST';\n\nmsg.payload  = {\n    \"grant_type\":\"password\",\n    \"username\":username,\n    \"password\":password\n};\n\nmsg.headers  = {\n                \"Content-Type\": \"application/x-www-form-urlencoded\"\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 280,
+        "wires": [
+            [
+                "1d126793b821024c"
+            ]
+        ]
+    },
+    {
+        "id": "1d126793b821024c",
+        "type": "http request",
+        "z": "d0a8fa6ddbf311c2",
+        "name": "req",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 690,
+        "y": 300,
+        "wires": [
+            [
+                "7a8f6a815b1d5ce8"
+            ]
+        ]
+    },
+    {
+        "id": "7a8f6a815b1d5ce8",
+        "type": "function",
+        "z": "d0a8fa6ddbf311c2",
+        "name": "Parse response",
+        "func": "var token = msg.payload.access_token;\nvar decoded = jwtDecode(token);\nmsg.payload = {\n    \"decoded\":decoded,\n    \"token\":token\n}\nnode.status({fill:\"green\",shape:\"dot\",text:\"Token updated.\"})\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [
+            {
+                "var": "jwtDecode",
+                "module": "jwt-decode"
+            }
+        ],
+        "x": 860,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1e0fd0798b825b1d",
+        "type": "switch",
+        "z": "d0a8fa6ddbf311c2",
+        "name": "check keys",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "hask",
+                "v": "exp",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 230,
+        "y": 200,
+        "wires": [
+            [
+                "287a6538d9f1a587"
+            ],
+            [
+                "ee92d6343982fd50"
+            ]
+        ]
+    },
+    {
+        "id": "287a6538d9f1a587",
+        "type": "function",
+        "z": "d0a8fa6ddbf311c2",
+        "name": "Check token",
+        "func": "let jwt = msg.payload;\nlet time_left = jwt.exp - Math.round(new Date().getTime()/1000);\n\nif(time_left > 120){\n    node.status({fill:\"green\",shape:\"dot\",text:\"TOKEN OK. \"+time_left+\" s left.\"})\n    msg.do_login = false;\n}\nelse{\n    node.status({fill:\"red\",shape:\"dot\",text:\"Token expired. LOGIN again\"})\n    msg.do_login = true;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 140,
+        "wires": [
+            [
+                "a70fefd545572681"
+            ]
+        ]
+    },
+    {
+        "id": "a70fefd545572681",
+        "type": "switch",
+        "z": "d0a8fa6ddbf311c2",
+        "name": "LOGIN?",
+        "property": "do_login",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 500,
+        "y": 200,
+        "wires": [
+            [
+                "ee92d6343982fd50"
+            ]
+        ]
+    },
+    {
+        "id": "386a9a683935141e",
+        "type": "switch",
+        "z": "d0a8fa6ddbf311c2",
+        "name": "Force update",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "force_update",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 2,
+        "x": 230,
+        "y": 140,
+        "wires": [
+            [
+                "ee92d6343982fd50"
+            ],
+            [
+                "1e0fd0798b825b1d"
+            ]
+        ]
+    },
+    {
+        "id": "608f9914d32cc6cc",
+        "type": "status",
+        "z": "d0a8fa6ddbf311c2",
+        "name": "",
+        "scope": [
+            "ee92d6343982fd50",
+            "7a8f6a815b1d5ce8",
+            "287a6538d9f1a587",
+            "06b6737a07825c2c"
+        ],
+        "x": 880,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "06b6737a07825c2c",
+        "type": "function",
+        "z": "d0a8fa6ddbf311c2",
+        "name": "Status",
+        "func": "node.status({fill:\"red\",shape:\"dot\",text:\"Please supply decoded token in msg.payload\"})",
+        "outputs": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "7604593fb4c16ba4",
+        "type": "subflow:d0a8fa6ddbf311c2",
+        "z": "7509ad250bd80ba5",
+        "name": "",
+        "env": [
+            {
+                "name": "username",
+                "value": "juha.autioniemi@lapinamk.fi",
+                "type": "str"
+            },
+            {
+                "name": "password",
+                "type": "cred"
+            }
+        ],
+        "x": 350,
+        "y": 300,
+        "wires": [
+            [
+                "b310b0e5d3a22710"
+            ],
+            []
+        ]
+    }
+]
