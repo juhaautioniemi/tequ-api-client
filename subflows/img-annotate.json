@@ -1,1 +1,608 @@
-[{"id":"83a7a965.1808a8","type":"subflow","name":"[IMG] Annotate","info":"","category":"Tequ-API Client","in":[{"x":120,"y":140,"wires":[{"id":"d05bfd8e.a02e"}]}],"out":[{"x":1080,"y":140,"wires":[{"id":"4e5f5c6c.bcf214","port":0}]}],"env":[{"name":"box_colors","type":"json","value":"{\"fish\":\"#FFFFFF\",\"pike\":\"#006400\",\"perch\":\"#008000\",\"smolt\":\"#ADD8E6\",\"salmon\":\"#0000FF\",\"trout\":\"#0000FF\",\"cyprinidae\":\"#808080\",\"zander\":\"#009000\",\"bream\":\"#008800\"}","ui":{"type":"input","opts":{"types":["json"]}}},{"name":"image_settings","type":"json","value":"{\"quality\":0.8}","ui":{"type":"input","opts":{"types":["json"]}}},{"name":"image_type","type":"str","value":"image/jpeg","ui":{"type":"select","opts":{"opts":[{"l":{"en-US":"JPG"},"v":"image/jpeg"},{"l":{"en-US":"PNG"},"v":"image/png"}]}}},{"name":"bbox_lineWidth","type":"num","value":"5","ui":{"type":"spinner","opts":{"min":0,"max":10}}},{"name":"bbox_text_color","type":"str","value":"white","ui":{"type":"select","opts":{"opts":[{"l":{"en-US":"white"},"v":"white"},{"l":{"en-US":"black"},"v":"black"},{"l":{"en-US":"blue"},"v":"blue"},{"l":{"en-US":"green"},"v":"green"},{"l":{"en-US":"yellow"},"v":"yellow"},{"l":{"en-US":"red"},"v":"red"},{"l":{"en-US":"orange"},"v":"orange"}]}}},{"name":"bbox_font","type":"str","value":"30px Arial","ui":{"type":"select","opts":{"opts":[{"l":{"en-US":"5px Arial"},"v":"5 px Arial"},{"l":{"en-US":"10px Arial"},"v":"10px Arial"},{"l":{"en-US":"15px Arial"},"v":"15px Arial"},{"l":{"en-US":"20px Arial"},"v":"20px Arial"},{"l":{"en-US":"25px Arial"},"v":"25px Arial"},{"l":{"en-US":"30px Arial"},"v":"30px Arial"},{"l":{"en-US":"35px Arial"},"v":"35px Arial"},{"l":{"en-US":"40px Arial"},"v":"40px Arial"},{"l":{"en-US":"45px Arial"},"v":"45px Arial"},{"l":{"en-US":"50px Arial"},"v":"50px Arial"}]}}},{"name":"label_offset_x","type":"num","value":"0","ui":{"type":"input","opts":{"types":["num"]}}},{"name":"label_offset_y","type":"num","value":"30","ui":{"type":"input","opts":{"types":["num"]}}},{"name":"threshold","type":"num","value":"0.75","ui":{"type":"spinner","opts":{"min":0,"max":1}}},{"name":"labels","type":"json","value":"[\"fish\",\"perch\", \"pike\", \"rainbow trout\", \"salmon\", \"trout\", \"cyprinidae\", \"zander\", \"smolt\"]","ui":{"type":"input","opts":{"types":["json"]}}}],"meta":{"module":"[IMG] Annotate","version":"0.0.1","author":"juha.autioniemi@lapinamk.fi","desc":"Annotates prediction results from [AI] Detect subflows.","license":"MIT"},"color":"#87A980","icon":"font-awesome/fa-pencil-square-o","status":{"x":1080,"y":280,"wires":[{"id":"7fd4f6bf24348b12","port":0}]}},{"id":"c19ac6bd.2a9d08","type":"function","z":"83a7a965.1808a8","name":"Annotate with  canvas","func":"var img = msg.payload.image.buffer;\nvar image_type = env.get(\"image_type\");\nvar image_settings = env.get(\"image_settings\");\nvar bbox_lineWidth = env.get(\"bbox_lineWidth\");\nvar bbox_text_color = env.get(\"bbox_text_color\");\nvar label_offset_x = env.get(\"label_offset_x\");\nvar label_offset_y = env.get(\"label_offset_y\");\nvar bbox_font = env.get(\"bbox_font\");\nvar COLORS = env.get(\"box_colors\");\nvar objects = msg.payload.inference.result\nvar labels = env.get(\"labels\")\n\n//Define threshold\nvar threshold = 0;\n\nglobal_settings = global.get(\"settings\") || undefined\nvar thresholdType = \"\"\n\nif(global_settings !== undefined){\n    if(\"threshold\" in global_settings){\n        threshold = global_settings[\"threshold\"]\n        thresholdType = \"global\";\n    }\n}\n\nelse if(\"threshold\" in msg){\n    threshold = msg.threshold;\n    thresholdType = \"msg\";\n    if(threshold < 0){\n        threshold = 0\n    }\n    else if(threshold > 1){\n        threshold = 1\n    }\n}\n\nelse{\n    threshold = env.get(\"threshold\");\n    thresholdType = \"env\";\n}\n\nmsg.thresholdUsed = threshold;\nmsg.thresholdTypeUsed = thresholdType;\n\nasync function annotateImage(image) {\n  const localImage = await canvas.loadImage(image);  \n  const cvs = canvas.createCanvas(localImage.width, localImage.height);\n  const ctx = cvs.getContext('2d');  \n  ctx.drawImage(localImage, 0, 0); \n  \n  objects.forEach((obj) => {\n        if(labels.includes(obj.class) && obj.score >= threshold){\n            let [x, y, w, h] = obj.bbox;\n            ctx.lineWidth = bbox_lineWidth;\n            ctx.strokeStyle = COLORS[obj.class];\n            ctx.strokeRect(x, y, w, h);\n            ctx.fillStyle = bbox_text_color;\n            ctx.font = bbox_font;\n            ctx.fillText(obj.class+\" \"+Math.round(obj.score*100)+\" %\",x+label_offset_x,y+label_offset_y);\n        }\n      });\n  \n  return cvs.toBuffer(image_type, image_settings);\n}\n\nif(objects.length > 0){\n    msg.annotated_image = await annotateImage(img)\n    //node.done()\n    msg.objects_found = true\n}\nelse{\n    msg.objects_found = false\n}\n\nreturn msg;","outputs":1,"noerr":0,"initialize":"","finalize":"","libs":[{"var":"canvas","module":"canvas"}],"x":440,"y":140,"wires":[["a801355d.9f7ac8"]]},{"id":"d05bfd8e.a02e","type":"change","z":"83a7a965.1808a8","name":"timer","rules":[{"t":"set","p":"start","pt":"msg","to":"","tot":"date"}],"action":"","property":"","from":"","to":"","reg":false,"x":230,"y":140,"wires":[["c19ac6bd.2a9d08"]]},{"id":"a801355d.9f7ac8","type":"change","z":"83a7a965.1808a8","name":"end timer","rules":[{"t":"set","p":"payload.annotation.time_ms","pt":"msg","to":"$millis() - msg.start","tot":"jsonata"},{"t":"set","p":"payload.annotation.buffer","pt":"msg","to":"annotated_image","tot":"msg"},{"t":"set","p":"payload.annotation.objects_found","pt":"msg","to":"objects_found","tot":"msg"},{"t":"delete","p":"annotated_image","pt":"msg"},{"t":"delete","p":"start","pt":"msg"}],"action":"","property":"","from":"","to":"","reg":false,"x":640,"y":140,"wires":[["4e5f5c6c.bcf214","c20a6448.e6f218"]]},{"id":"4e5f5c6c.bcf214","type":"change","z":"83a7a965.1808a8","name":"delete useless","rules":[{"t":"delete","p":"annotated_image","pt":"msg"},{"t":"delete","p":"start","pt":"msg"},{"t":"delete","p":"objects_found","pt":"msg"}],"action":"","property":"","from":"","to":"","reg":false,"x":880,"y":140,"wires":[[]]},{"id":"c20a6448.e6f218","type":"switch","z":"83a7a965.1808a8","name":"objects found?","property":"objects_found","propertyType":"msg","rules":[{"t":"true"},{"t":"false"}],"checkall":"true","repair":false,"outputs":2,"x":660,"y":200,"wires":[["a9379cd1321a02da"],["0ec56ca8f000a540"]]},{"id":"a9379cd1321a02da","type":"function","z":"83a7a965.1808a8","name":"","func":"node.status({fill:\"green\",shape:\"dot\",text:msg.thresholdTypeUsed+\" \"+msg.thresholdUsed+\" in \"+msg.payload.annotation.time_ms+\" ms\"})","outputs":0,"noerr":0,"initialize":"","finalize":"","libs":[],"x":860,"y":180,"wires":[]},{"id":"0ec56ca8f000a540","type":"function","z":"83a7a965.1808a8","name":"","func":"node.status({fill:\"green\",shape:\"dot\",text:msg.thresholdTypeUsed+\" \"+msg.thresholdUsed+\" No objects to annotate\"})","outputs":0,"noerr":0,"initialize":"","finalize":"","libs":[],"x":860,"y":220,"wires":[]},{"id":"7fd4f6bf24348b12","type":"status","z":"83a7a965.1808a8","name":"","scope":null,"x":860,"y":280,"wires":[[]]},{"id":"a71ac9aed668c744","type":"subflow:83a7a965.1808a8","z":"d994f01a5b816cf9","name":"","x":890,"y":1540,"wires":[[]]}]
+[
+    {
+        "id": "4e11b7ba67d55a6b",
+        "type": "subflow",
+        "name": "[IMG] Annotate",
+        "info": "",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 120,
+                "y": 140,
+                "wires": [
+                    {
+                        "id": "0dd4b2b793695f5d"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1080,
+                "y": 140,
+                "wires": [
+                    {
+                        "id": "29daca8a3e61010c",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "box_colors",
+                "type": "json",
+                "value": "{\"fish\":\"#FFFFFF\",\"pike\":\"#006400\",\"perch\":\"#008000\",\"smolt\":\"#ADD8E6\",\"salmon\":\"#0000FF\",\"trout\":\"#0000FF\",\"cyprinidae\":\"#808080\",\"zander\":\"#009000\",\"bream\":\"#008800\"}",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "json"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "image_settings",
+                "type": "json",
+                "value": "{\"quality\":0.8}",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "json"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "image_type",
+                "type": "str",
+                "value": "image/jpeg",
+                "ui": {
+                    "type": "select",
+                    "opts": {
+                        "opts": [
+                            {
+                                "l": {
+                                    "en-US": "JPG"
+                                },
+                                "v": "image/jpeg"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "PNG"
+                                },
+                                "v": "image/png"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "bbox_lineWidth",
+                "type": "num",
+                "value": "5",
+                "ui": {
+                    "type": "spinner",
+                    "opts": {
+                        "min": 0,
+                        "max": 10
+                    }
+                }
+            },
+            {
+                "name": "bbox_text_color",
+                "type": "str",
+                "value": "white",
+                "ui": {
+                    "type": "select",
+                    "opts": {
+                        "opts": [
+                            {
+                                "l": {
+                                    "en-US": "white"
+                                },
+                                "v": "white"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "black"
+                                },
+                                "v": "black"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "blue"
+                                },
+                                "v": "blue"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "green"
+                                },
+                                "v": "green"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "yellow"
+                                },
+                                "v": "yellow"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "red"
+                                },
+                                "v": "red"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "orange"
+                                },
+                                "v": "orange"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "bbox_font",
+                "type": "str",
+                "value": "30px Arial",
+                "ui": {
+                    "type": "select",
+                    "opts": {
+                        "opts": [
+                            {
+                                "l": {
+                                    "en-US": "5px Arial"
+                                },
+                                "v": "5 px Arial"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "10px Arial"
+                                },
+                                "v": "10px Arial"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "15px Arial"
+                                },
+                                "v": "15px Arial"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "20px Arial"
+                                },
+                                "v": "20px Arial"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "25px Arial"
+                                },
+                                "v": "25px Arial"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "30px Arial"
+                                },
+                                "v": "30px Arial"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "35px Arial"
+                                },
+                                "v": "35px Arial"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "40px Arial"
+                                },
+                                "v": "40px Arial"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "45px Arial"
+                                },
+                                "v": "45px Arial"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "50px Arial"
+                                },
+                                "v": "50px Arial"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "label_offset_x",
+                "type": "num",
+                "value": "0",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "label_offset_y",
+                "type": "num",
+                "value": "30",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "threshold",
+                "type": "num",
+                "value": "0.75",
+                "ui": {
+                    "type": "spinner",
+                    "opts": {
+                        "min": 0,
+                        "max": 1
+                    }
+                }
+            }
+        ],
+        "meta": {
+            "module": "[IMG] Annotate",
+            "version": "0.0.1",
+            "author": "juha.autioniemi@lapinamk.fi",
+            "desc": "Annotates prediction results from [AI] Detect subflows.",
+            "license": "MIT"
+        },
+        "color": "#87A980",
+        "icon": "font-awesome/fa-pencil-square-o",
+        "status": {
+            "x": 1080,
+            "y": 340,
+            "wires": [
+                {
+                    "id": "1267cc4998d8726c",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "d7a726cdc1ba008c",
+        "type": "function",
+        "z": "4e11b7ba67d55a6b",
+        "name": "Annotate with  canvas",
+        "func": "const img = msg.payload;\nconst objects = msg.data.properties.computer_vision.result\nconst labels = msg.data.properties.computer_vision.labels\n\nconst image_type = env.get(\"image_type\");\nconst image_settings = env.get(\"image_settings\");\nconst bbox_lineWidth = env.get(\"bbox_lineWidth\");\nconst bbox_text_color = env.get(\"bbox_text_color\");\nconst label_offset_x = env.get(\"label_offset_x\");\nconst label_offset_y = env.get(\"label_offset_y\");\nconst bbox_font = env.get(\"bbox_font\");\nconst COLORS = env.get(\"box_colors\");\n\n\n//Define threshold\nlet threshold = 0;\n\nconst global_settings = global.get(\"settings\") || undefined\nlet thresholdType = \"\"\n\nif(global_settings !== undefined){\n    if(\"threshold\" in global_settings){\n        threshold = global_settings[\"threshold\"]\n        thresholdType = \"global\";\n    }\n}\n\nelse if(\"threshold\" in msg){\n    threshold = msg.threshold;\n    thresholdType = \"msg\";\n    if(threshold < 0){\n        threshold = 0\n    }\n    else if(threshold > 1){\n        threshold = 1\n    }\n}\n\nelse{\n    threshold = env.get(\"threshold\");\n    thresholdType = \"env\";\n}\n\nmsg.thresholdUsed = threshold;\nmsg.thresholdTypeUsed = thresholdType;\n\nasync function annotateImage(image) {\n  const localImage = await canvas.loadImage(image);  \n  const cvs = canvas.createCanvas(localImage.width, localImage.height);\n  const ctx = cvs.getContext('2d');  \n  ctx.drawImage(localImage, 0, 0); \n  \n  objects.forEach((obj) => {\n        if(labels.includes(obj.class) && obj.score >= threshold){\n            let [x, y, w, h] = obj.bbox;\n            ctx.lineWidth = bbox_lineWidth;\n            ctx.strokeStyle = COLORS[obj.class];\n            ctx.strokeRect(x, y, w, h);\n            ctx.fillStyle = bbox_text_color;\n            ctx.font = bbox_font;\n            ctx.fillText(obj.class+\" \"+Math.round(obj.score*100)+\" %\",x+label_offset_x,y+label_offset_y);\n        }\n      });\n  \n  return cvs.toBuffer(image_type, image_settings);\n}\n\nif(objects.length > 0){\n    msg.data.properties.object.data.annotated.image = await annotateImage(img)   \n    msg.objects_found = true\n}\nelse{\n    msg.objects_found = false\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [
+            {
+                "var": "canvas",
+                "module": "canvas"
+            }
+        ],
+        "x": 440,
+        "y": 140,
+        "wires": [
+            [
+                "e41817b0c8a5b9b3"
+            ]
+        ]
+    },
+    {
+        "id": "0dd4b2b793695f5d",
+        "type": "change",
+        "z": "4e11b7ba67d55a6b",
+        "name": "timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "start",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 230,
+        "y": 140,
+        "wires": [
+            [
+                "d7a726cdc1ba008c"
+            ]
+        ]
+    },
+    {
+        "id": "e41817b0c8a5b9b3",
+        "type": "change",
+        "z": "4e11b7ba67d55a6b",
+        "name": "end timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.properties.object.data.annotated.annotation_ms",
+                "pt": "msg",
+                "to": "$millis() - msg.start",
+                "tot": "jsonata"
+            },
+            {
+                "t": "set",
+                "p": "payload.annotation.objects_found",
+                "pt": "msg",
+                "to": "objects_found",
+                "tot": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "annotated_image",
+                "pt": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 660,
+        "y": 140,
+        "wires": [
+            [
+                "4e4d4c25b07c0ba8"
+            ]
+        ]
+    },
+    {
+        "id": "29daca8a3e61010c",
+        "type": "change",
+        "z": "4e11b7ba67d55a6b",
+        "name": "delete useless",
+        "rules": [
+            {
+                "t": "delete",
+                "p": "annotated_image",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "start",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "resize_start",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "thresholdTypeUsed",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "threshold",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "thresholdUsed",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "start",
+                "pt": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 900,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4e4d4c25b07c0ba8",
+        "type": "switch",
+        "z": "4e11b7ba67d55a6b",
+        "name": "objects found?",
+        "property": "objects_found",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 220,
+        "y": 260,
+        "wires": [
+            [
+                "e513ea3b283ededb"
+            ],
+            [
+                "db3650560a89786c"
+            ]
+        ]
+    },
+    {
+        "id": "09c0b9e2fb70348c",
+        "type": "function",
+        "z": "4e11b7ba67d55a6b",
+        "name": "",
+        "func": "node.status({ fill: \"green\", shape: \"dot\", text: msg.thresholdTypeUsed + \" \" + msg.thresholdUsed + \" in \" + msg.data.properties.object.data.annotated.total_ms+\" ms\"})",
+        "outputs": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1040,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "db3650560a89786c",
+        "type": "function",
+        "z": "4e11b7ba67d55a6b",
+        "name": "",
+        "func": "node.status({fill:\"green\",shape:\"dot\",text:msg.thresholdTypeUsed+\" \"+msg.thresholdUsed+\" No objects to annotate\"})\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 300,
+        "wires": [
+            [
+                "29daca8a3e61010c"
+            ]
+        ]
+    },
+    {
+        "id": "1267cc4998d8726c",
+        "type": "status",
+        "z": "4e11b7ba67d55a6b",
+        "name": "",
+        "scope": null,
+        "x": 860,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e513ea3b283ededb",
+        "type": "change",
+        "z": "4e11b7ba67d55a6b",
+        "name": "timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "resize_start",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 490,
+        "y": 240,
+        "wires": [
+            [
+                "9f94b5c7e7ea0be7"
+            ]
+        ]
+    },
+    {
+        "id": "9f94b5c7e7ea0be7",
+        "type": "function",
+        "z": "4e11b7ba67d55a6b",
+        "name": "resize",
+        "func": "let input = msg.data.properties.object.data.annotated.image;\n\nlet resized = await sharp(input)\n  .metadata()\n  .then(({ width }) => sharp(input)\n    .resize({ width: 200 })\n    .toBuffer()\n);\n\nmsg.data.properties.object.data.annotated.thumbnail = resized.toString('base64');\nmsg.data.properties.object.data.annotated.image = (msg.data.properties.object.data.annotated.image).toString('base64')\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [
+            {
+                "var": "sharp",
+                "module": "sharp"
+            }
+        ],
+        "x": 630,
+        "y": 240,
+        "wires": [
+            [
+                "fe616fcb6d99141b"
+            ]
+        ]
+    },
+    {
+        "id": "fe616fcb6d99141b",
+        "type": "change",
+        "z": "4e11b7ba67d55a6b",
+        "name": "end timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.properties.object.data.annotated.thumbnail_ms",
+                "pt": "msg",
+                "to": "$millis() - msg.resize_start",
+                "tot": "jsonata"
+            },
+            {
+                "t": "set",
+                "p": "data.properties.object.data.annotated.total_ms",
+                "pt": "msg",
+                "to": "$millis() - msg.start",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 780,
+        "y": 240,
+        "wires": [
+            [
+                "29daca8a3e61010c",
+                "09c0b9e2fb70348c"
+            ]
+        ]
+    },
+    {
+        "id": "34ecaa830d9e5583",
+        "type": "subflow:4e11b7ba67d55a6b",
+        "z": "022e42e3f5d0335d",
+        "name": "",
+        "env": [
+            {
+                "name": "threshold",
+                "value": "0.80",
+                "type": "num"
+            },
+            {
+                "name": "labels",
+                "value": "[\"fish\",\"perch\", \"pike\", \"rainbow trout\", \"salmon\", \"trout\", \"cyprinidae\", \"zander\", \"smolt\", \"bream\", \"teddy_bear\"]",
+                "type": "json"
+            }
+        ],
+        "x": 1060,
+        "y": 340,
+        "wires": [
+            [
+                "8ef03074d8d04091"
+            ]
+        ]
+    }
+]
