@@ -1,0 +1,745 @@
+[
+    {
+        "id": "fa7f491898fed374",
+        "type": "subflow",
+        "name": "gst-jetson",
+        "info": "",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 120,
+                "y": 200,
+                "wires": [
+                    {
+                        "id": "54dc40fe44895f9a"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1100,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "ab1595a359c8a71b",
+                        "port": 0
+                    },
+                    {
+                        "id": "dd701ced077fb628",
+                        "port": 0
+                    },
+                    {
+                        "id": "361321e30bc9bba9",
+                        "port": 0
+                    },
+                    {
+                        "id": "d86014e70dadc4b2",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "video_source",
+                "type": "str",
+                "value": "pylonsrc",
+                "ui": {
+                    "type": "select",
+                    "opts": {
+                        "opts": [
+                            {
+                                "l": {
+                                    "en-US": "pylonsrc"
+                                },
+                                "v": "pylonsrc"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "v4l2src"
+                                },
+                                "v": "v4l2src"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "v4l2_device",
+                "type": "str",
+                "value": "/dev/video0",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "serial",
+                "type": "str",
+                "value": "40257292",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "model",
+                "type": "str",
+                "value": "daA3840-45uc",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "manufacturer",
+                "type": "str",
+                "value": "Basler",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "pfs_file",
+                "type": "str",
+                "value": "/home/tequ/40257292.pfs",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "enable_mjpeg",
+                "type": "bool",
+                "value": "true",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "bool"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "mjpeg_width",
+                "type": "num",
+                "value": "1920",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "mjpeg_height",
+                "type": "num",
+                "value": "1080",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "mjpeg_framerate",
+                "type": "num",
+                "value": "5",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "mjpeg_font_size",
+                "type": "num",
+                "value": "8",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "enable_rtsp",
+                "type": "bool",
+                "value": "true",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "bool"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "rtsp_width",
+                "type": "num",
+                "value": "3840",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "rtsp_height",
+                "type": "num",
+                "value": "2160",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "rtsp_font_size",
+                "type": "str",
+                "value": "4",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "rtsp_server",
+                "type": "str",
+                "value": "rtsp://localhost:8554/",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "rtsp_framerate",
+                "type": "num",
+                "value": "10",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "rtsp_encoder",
+                "type": "str",
+                "value": "nvv4l2h265enc",
+                "ui": {
+                    "type": "select",
+                    "opts": {
+                        "opts": [
+                            {
+                                "l": {
+                                    "en-US": "nvv4l2h265enc"
+                                },
+                                "v": "nvv4l2h265enc"
+                            },
+                            {
+                                "l": {
+                                    "en-US": "nvv4l2h264enc"
+                                },
+                                "v": "nvv4l2h264enc"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "tcp_host",
+                "type": "str",
+                "value": "localhost",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "tcp_port",
+                "type": "num",
+                "value": "50001",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "video_width",
+                "type": "num",
+                "value": "3840",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "video_height",
+                "type": "num",
+                "value": "2160",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "video_type",
+                "type": "str",
+                "value": "video/x-raw",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "video_format",
+                "type": "str",
+                "value": "YUY2",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "video_framerate",
+                "type": "num",
+                "value": "10",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "env"
+                        ]
+                    }
+                }
+            }
+        ],
+        "meta": {
+            "module": "tequ-basler-gst-jetson",
+            "version": "0.0.1",
+            "author": "juha.autioniemi@lapinamk.fi",
+            "desc": "Launch and control GStreamer pipelines.",
+            "license": "MIT"
+        },
+        "color": "#3FADB5",
+        "inputLabels": [
+            "command in"
+        ],
+        "outputLabels": [
+            "info out"
+        ],
+        "icon": "node-red/bridge.svg",
+        "status": {
+            "x": 1060,
+            "y": 360,
+            "wires": [
+                {
+                    "id": "6abd0b160a7877dd",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "d9a2420055236c2b",
+        "type": "change",
+        "z": "fa7f491898fed374",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "kill",
+                "pt": "msg",
+                "to": "SIGTERM",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 490,
+        "y": 120,
+        "wires": [
+            [
+                "99ac100731d2d825"
+            ]
+        ]
+    },
+    {
+        "id": "be99e21d6ee788c1",
+        "type": "function",
+        "z": "fa7f491898fed374",
+        "name": "construct gst pipeline",
+        "func": "let serial = env.get(\"serial\");\nlet model = env.get(\"model\");\nlet pfs_file = env.get(\"pfs_file\");\nlet source = env.get(\"video_source\");\nlet v4l2_device = env.get(\"v4l2_device\");\nlet manufacturer = env.get(\"manufacturer\");\n\nlet enable_rtsp = env.get(\"enable_rtsp\")\nlet rtsp_width = env.get(\"rtsp_width\");\nlet rtsp_height = env.get(\"rtsp_height\");\nlet rtsp_framerate = env.get(\"rtsp_framerate\");\nlet rtsp_encoder = env.get(\"rtsp_encoder\");\nlet rtsp_font_size = env.get(\"rtsp_font_size\");\nlet rtsp_server = env.get(\"rtsp_server\");\n\nlet enable_mjpeg = env.get(\"enable_mjpeg\")\nlet mjpeg_width = env.get(\"mjpeg_width\");\nlet mjpeg_height = env.get(\"mjpeg_height\");\nlet mjpeg_framerate = env.get(\"mjpeg_framerate\");\nlet mjpeg_font_size = env.get(\"mjpeg_font_size\");\n\n\nlet video_width = env.get(\"video_width\");\nlet video_height = env.get(\"video_height\");\nlet video_format = env.get(\"video_format\");\nlet video_type = env.get(\"video_type\");\nlet video_framerate = env.get(\"video_framerate\");\nlet tcp_host = env.get(\"tcp_host\");\nlet tcp_port = env.get(\"tcp_port\");\nlet gst_pipeline;\n\n\n\n\nlet gst_msg = {}\n\nif (source == \"pylonsrc\"){\n    gst_pipeline = \n        source + ' capture-error=skip device-serial-number=\"' + serial + '\" pfs-location=' + pfs_file; \n    \n    gst_pipeline = gst_pipeline + ' ! \"' + video_type + ',width=' + video_width + ',height=' + video_height + ',framerate=' + video_framerate + '/1,format=' + video_format+ '\"'; \n    gst_pipeline = gst_pipeline + ' ! tee name = video_out';\n\n\n    if (enable_mjpeg){\n        gst_pipeline = gst_pipeline + ' video_out. ! clockoverlay time-format=\"%d-%m-%Y %H:%M:%S - ' + serial + '\" font-desc=\"Sans, ' + mjpeg_font_size + '\" ! videoscale ! videorate ! \"' + video_type + ',width=' + mjpeg_width + ',height=' + mjpeg_height + ',framerate=' + mjpeg_framerate + '/1,format=' + video_format + '\" ! nvvidconv ! nvjpegenc ! taginject tags = \"application-name=tequ-gst-1.0,copyright=Lapland_UAS,description=serialnumber_' + serial + ',artist=Tequ,device-manufacturer=' + manufacturer +',device-model='+model+'\" ! jifmux ! queue ! tcpclientsink host='+tcp_host+' port='+tcp_port;\n    }\n    if (enable_rtsp){\n        gst_pipeline = gst_pipeline + ' video_out. ! clockoverlay time-format=\"%d-%m-%Y %H:%M:%S - ' + serial + '\" font-desc=\"Sans, ' + rtsp_font_size +'\" ! videoscale ! videorate ! \"' + video_type + ',width=' + rtsp_width + ',height=' + rtsp_height + ',framerate=' + rtsp_framerate + '/1,format=' + video_format + '\" ! nvvidconv ! ' +rtsp_encoder+' ! queue ! rtspclientsink location = '+rtsp_server+serial+'';\n    }\n}\nelse if (source == \"v4l2src\"){\n    gst_pipeline =\n        source + ' device=\"' + v4l2_device+'\"'; \n    gst_pipeline = gst_pipeline + ' ! videoscale ! \"' + video_type + ',width=' + video_width + ',height=' + video_height + ',framerate=' + video_framerate + '/1,format=' + video_format + '\"';\n    gst_pipeline = gst_pipeline + ' ! tee name = video_out';\n\n    if (enable_mjpeg) {\n        gst_pipeline = gst_pipeline + ' video_out. ! clockoverlay time-format=\"%d-%m-%Y %H:%M:%S - ' + serial + '\" font-desc=\"Sans, ' + mjpeg_font_size + '\" ! videoscale ! videorate ! \"' + video_type + ',width=' + mjpeg_width + ',height=' + mjpeg_height + ',framerate=' + mjpeg_framerate + '/1,format=' + video_format + '\" ! nvvidconv ! nvjpegenc ! taginject tags = \"application-name=tequ-gst-1.0,copyright=Lapland_UAS,description=serialnumber_' + serial + ',artist=Tequ,device-manufacturer=' + manufacturer + ',device-model=' + model + '\" ! jifmux ! queue ! tcpclientsink host=' + tcp_host + ' port=' + tcp_port;\n    }\n    if (enable_rtsp) {\n        gst_pipeline = gst_pipeline + ' video_out. ! clockoverlay time-format=\"%d-%m-%Y %H:%M:%S - ' + serial + '\" font-desc=\"Sans, ' + rtsp_font_size + '\" ! videoscale ! videorate ! \"' + video_type + ',width=' + rtsp_width + ',height=' + rtsp_height + ',framerate=' + rtsp_framerate + '/1,format=' + video_format + '\" ! nvvidconv ! ' + rtsp_encoder + ' ! queue ! rtspclientsink location = ' + rtsp_server + serial + '';\n    }\n}\nelse {\n    node.status({ fill: \"red\", shape: \"ring\", text: \"src: \" + source +\" is not supported\" });\n    return null;\n}\n\ngst_msg.payload = gst_pipeline;\nnode.status({fill:\"blue\",shape:\"ring\",text:\"Launching...\"});\nreturn gst_msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 320,
+        "wires": [
+            [
+                "99ac100731d2d825",
+                "ab1595a359c8a71b"
+            ]
+        ]
+    },
+    {
+        "id": "99ac100731d2d825",
+        "type": "exec",
+        "z": "fa7f491898fed374",
+        "command": "gst-launch-1.0",
+        "addpay": "payload",
+        "append": "",
+        "useSpawn": "true",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "gst-launch",
+        "x": 710,
+        "y": 120,
+        "wires": [
+            [
+                "361321e30bc9bba9"
+            ],
+            [
+                "dd701ced077fb628"
+            ],
+            [
+                "d86014e70dadc4b2"
+            ]
+        ]
+    },
+    {
+        "id": "8ba82764fc44edf8",
+        "type": "delay",
+        "z": "fa7f491898fed374",
+        "name": "",
+        "pauseType": "random",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "6",
+        "randomLast": "22",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 480,
+        "y": 240,
+        "wires": [
+            [
+                "be99e21d6ee788c1"
+            ]
+        ]
+    },
+    {
+        "id": "f6110566b977602b",
+        "type": "change",
+        "z": "fa7f491898fed374",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "kill",
+                "pt": "msg",
+                "to": "SIGTERM",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 490,
+        "y": 180,
+        "wires": [
+            [
+                "8ba82764fc44edf8",
+                "99ac100731d2d825"
+            ]
+        ]
+    },
+    {
+        "id": "6abd0b160a7877dd",
+        "type": "status",
+        "z": "fa7f491898fed374",
+        "name": "",
+        "scope": [
+            "be99e21d6ee788c1",
+            "99ac100731d2d825",
+            "54dc40fe44895f9a"
+        ],
+        "x": 760,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "54dc40fe44895f9a",
+        "type": "function",
+        "z": "fa7f491898fed374",
+        "name": "cmd?",
+        "func": "let topic = msg.topic;\n\nif(topic == \"kill\"){\n    node.status({fill:\"red\",shape:\"ring\",text:\"cmd: kill\"});\n    return [msg,null,null]\n}\nelse if (topic == \"restart\") {\n    node.status({ fill: \"yellow\", shape: \"ring\", text: \"cmd: restart\" });\n    return [null, msg, null]\n}\nelse if (topic == \"start\") {\n    node.status({ fill: \"blue\", shape: \"ring\", text: \"cmd: start\" });\n    return [null, null, msg]\n}\n\nreturn msg;",
+        "outputs": 3,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 230,
+        "y": 200,
+        "wires": [
+            [
+                "d9a2420055236c2b"
+            ],
+            [
+                "f6110566b977602b"
+            ],
+            [
+                "be99e21d6ee788c1"
+            ]
+        ]
+    },
+    {
+        "id": "ab1595a359c8a71b",
+        "type": "change",
+        "z": "fa7f491898fed374",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "pipeline-info",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 770,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "dd701ced077fb628",
+        "type": "change",
+        "z": "fa7f491898fed374",
+        "name": "stderr",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "stderr",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 870,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "361321e30bc9bba9",
+        "type": "change",
+        "z": "fa7f491898fed374",
+        "name": "stdout",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "stdout",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 870,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d86014e70dadc4b2",
+        "type": "change",
+        "z": "fa7f491898fed374",
+        "name": "return code",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "return code",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 890,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d22449da926eb9b1",
+        "type": "subflow:fa7f491898fed374",
+        "z": "332da02c8e396138",
+        "name": "gst Basler 40198132",
+        "env": [
+            {
+                "name": "serial",
+                "value": "40198132",
+                "type": "str"
+            },
+            {
+                "name": "pfs_file",
+                "value": "/home/nvidia/basler/40198132.pfs",
+                "type": "str"
+            },
+            {
+                "name": "mjpeg_width",
+                "value": "854",
+                "type": "num"
+            },
+            {
+                "name": "mjpeg_height",
+                "value": "480",
+                "type": "num"
+            },
+            {
+                "name": "rtsp_width",
+                "value": "1920",
+                "type": "num"
+            },
+            {
+                "name": "rtsp_height",
+                "value": "1080",
+                "type": "num"
+            },
+            {
+                "name": "rtsp_encoder",
+                "value": "nvv4l2h264enc",
+                "type": "str"
+            },
+            {
+                "name": "framerate",
+                "value": "5",
+                "type": "num"
+            }
+        ],
+        "x": 360,
+        "y": 140,
+        "wires": [
+            [
+                "21f2142dbe030a40"
+            ]
+        ]
+    }
+]
