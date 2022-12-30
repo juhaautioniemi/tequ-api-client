@@ -12,7 +12,7 @@ This repository is collection of useful Node-RED subflows to work with Computer 
 
 Tequ API documentation
 
-https://api.tequ.fi/
+- https://api.tequ.fi/
 
 
 ### Before using subflows related to Computer Vision prepare your machine(s):
@@ -24,7 +24,6 @@ https://api.tequ.fi/
 - RPI3/4: https://github.com/Lapland-UAS-Tequ/tequ-rpi-setup
 
 - NVIDIA Triton https://github.com/Lapland-UAS-Tequ/tequ-setup-triton-inference-server
-
 
 
 ### Available subflows
