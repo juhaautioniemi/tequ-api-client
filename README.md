@@ -50,7 +50,8 @@ Example how to use these subflows as a functional computer vision system
 | [API] Add video clip   | 0.0.1  | Send image to Tequ-API. Saves image to local filesystem if API is not available. | <a href="subflows/api-add-video.json">json</a> |
 | [API] Operation            | 0.0.1            | **N/A** | <a href="subflows/api-operation.json">json</a> |
 | Parse JPEG | 0.0.1     | Parse and pre-process JPEG image or image stream | <a href="subflows/Parse%20JPEG.json">json</a> 
-| Pre-process [TF]           | 0.0.1            | Pre-process image for Triton Inference Server using tfjs-node-gpu | <a href="subflows/Pre-process [TF].json">json</a> 
+| Pre-process [TF]           | 0.0.1            | Pre-process image for Triton Inference Server using tfjs-node-gpu | <a href="subflows/Pre-process [TF].json">json</a>
+| Thumbnail [TF]           | 0.0.1            | Create thumbnail using tfjs-node-gpu | <a href="subflows/tf-thumbnail.json">json</a>
 | Pre-process                | 0.0.1            | Pre-process image for Triton Inference Server using numjs and piscina | <a href="subflows/Pre-process.json">json</a> | Triton request | 0.0.1     | Send pre-processed image to Triton Inference Server | <a href="subflows/Triton%20request.json">json</a> 
 | Post-process | 0.0.1     | Post-process response from Triton request| <a href="subflows/Post%20process.json">json</a> 
 | gst jetson | 0.0.1     | Launch GStreamer pipeline to read data from Basler cameras | <a href="subflows/gst-jetson.json">json</a> 
