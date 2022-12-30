@@ -36,10 +36,10 @@ Most of these subflows have external dependencies, that will you need to install
 | [CAM] RPi libcamera         | 0.0.1           | Stream MJPEG from RPi HQ-camera (libcamera) | <a href="subflows/cam-rpi-libcamera-mjpeg.json">json</a> |
 | [AI] Detect-sm              | 0.0.1           | Make prediction on image using Tensorflow SavedModel trained with tequ-tf2-ca-training-pipeline | <a href="subflows/ai-detect-sm.json">json</a> |
 | [AI] Detect-Triton        | 0.0.1           | Make prediction on image using Tensorflow SavedModel hosted in NVIDIA Triton Inference Server | <a href="subflows/ai-detect-triton.json">json</a> |
-| [AI] Detect-v1*             | 0.0.1	          | Make prediction on image using Tensorflow.js model trained with tequ-tf1-ca-training-pipeline. | <a href="subflows/ai-detect-v1.json">json</a> |
-| [AI] Detect-v2*             | 0.0.1           | Make prediction on image using Tensorflow.js model trained with tequ-tf1-ca-training-pipeline. | <a href="subflows/ai-detect-v2.json">json</a> |
-| [AI] Detect-acv**            | 0.0.1          | Make prediction on image using Tensorflow.js model trained and exported from Microsoft Azure Custom Vision | <a href="subflows/ai-detect-acv.json">json</a>  |
-| [AI] Crop & TM***            | 0.0.1          | Crops results from '[AI] detect subflows' and classify cropped area(s) using Tensorflow.js model trained and exported from Google Teachable Machine. | <a href="subflows/ai-crop-tm.json">json</a> |
+| [AI] Detect-v1             | 0.0.1	          | Make prediction on image using Tensorflow.js model trained with tequ-tf1-ca-training-pipeline. | <a href="subflows/ai-detect-v1.json">json</a> |
+| [AI] Detect-v2             | 0.0.1           | Make prediction on image using Tensorflow.js model trained with tequ-tf1-ca-training-pipeline. | <a href="subflows/ai-detect-v2.json">json</a> |
+| [AI] Detect-acv           | 0.0.1          | Make prediction on image using Tensorflow.js model trained and exported from Microsoft Azure Custom Vision | <a href="subflows/ai-detect-acv.json">json</a>  |
+| [AI] Crop & TM           | 0.0.1          | Crops results from '[AI] detect subflows' and classify cropped area(s) using Tensorflow.js model trained and exported from Google Teachable Machine. | <a href="subflows/ai-crop-tm.json">json</a> |
 | [IMG] Annotate	            | 0.0.1           | Annotates prediction results from [AI] Inference subflow. | <a href="subflows/img-annotate.json">json</a> |
 | [IMG] Thumbnails            | 0.0.1           | Creates thumbnails of original image and annotated image. | <a href="subflows/img-thumbnails.json">json</a> |
 | [IMG] Crop detected object(s) | 0.0.1     | Creates thumbnails of original image and annotated image. | <a href="subflows/img-crop-detected-object.json">json</a> |
@@ -52,38 +52,6 @@ Most of these subflows have external dependencies, that will you need to install
 | Pre-process [TF]           | 0.0.1            | Pre-process image for Triton Inference Server using tfjs-node-gpu | <a href="subflows/Pre-process [TF].json">json</a> 
 | Pre-process                | 0.0.1            | Pre-process image for Triton Inference Server using numjs and piscina | <a href="subflows/Pre-process.json">json</a> | Triton request | 0.0.1     | Send pre-processed image to Triton Inference Server | <a href="subflows/Triton%20request.json">json</a> 
 | Post-process | 0.0.1     | Post-process response from Triton request| <a href="subflows/Post%20process.json">json</a> 
-
-*Remove folder "node_modules" from /.node-red/node_modules/@cloud-annotations/models-node-gpu
-
-**To enable GPU support when using [AI] Detect-acv
-```
-Modify file .node-red\node_modules\@microsoft\customvision-tfjs-node\lib\index.js
-
-Replace Line 28:
-
-var tf = _interopRequireWildcard(require("@tensorflow/tfjs-node"));
-
-with:
-
-var tf = _interopRequireWildcard(require("@tensorflow/tfjs-node-gpu"));
-```
-
-You might also need to re-install tfjs-node-gpu to make everything work and tfjs-node to make everything work.
-
-***To enable GPU support when using [AI] Crop & TM
-```
-Modify file .node-red\node_modules\node-red-contrib-teachable-machine\teachable_machine.js
-
-Replace Line 5:
-
-var tf = require('@tensorflow/tfjs')
-
-with:
-
-var tf = require('@tensorflow/tfjs-node-gpu')
-
-```
-You might also need to re-install tfjs-node-gpu to make everything work.
 
 ### Subflows palette
 
