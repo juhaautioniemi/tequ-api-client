@@ -1,1 +1,550 @@
-[{"id":"fcd42407.59d1a8","type":"subflow","name":"[API] Add image","info":"This node sends single image to Tequ-API. \n\nEndpoint used is /image/add\n\nYou need to add Bearer token to msg.token.\n\nYou can configure maximum times to try sending by parameter \"times_to_try\" in node config.","category":"Tequ-API Client","in":[{"x":40,"y":40,"wires":[{"id":"80c6d087.30ca7"}]}],"out":[{"x":1280,"y":60,"wires":[{"id":"f6e7b71a.50b0f8","port":0}]}],"env":[{"name":"times_to_try","type":"num","value":"3","ui":{"type":"spinner","opts":{"min":1,"max":10}}}],"meta":{"module":"node-red-contrib-tequ-api-add-image","version":"0.0.1","author":"juha.autioniemi@lapinamk.fi","desc":"Send image to Tequ-API. Saves image to local filesystem if API is not available.","license":"MIT"},"color":"#3FADB5","inputLabels":["Data in"],"outputLabels":["Data out"],"icon":"node-red/white-globe.svg","status":{"x":1280,"y":320,"wires":[{"id":"9363fb9a.c3f578","port":0}]}},{"id":"5b933476.fc386c","type":"http request","z":"fcd42407.59d1a8","name":"POST","method":"use","ret":"obj","paytoqs":"ignore","url":"","tls":"","persist":true,"proxy":"","authType":"","x":530,"y":100,"wires":[["5b3e2fe4.4c3f9"]]},{"id":"f17ef03d.d18bf","type":"function","z":"fcd42407.59d1a8","name":"HTTP request","func":"if('token' in msg){\n    times_to_try = env.get(\"times_to_try\")\n    token = msg.token;\n    msg.data = msg.payload;\n    msg.method = \"POST\";\n    msg.url = \"https://tequ-api.eu-de.mybluemix.net/api/v1/image/add\"\n    msg.headers  = {\n                    \"Content-Type\": \"application/json\",\n                    'Authorization': \"Bearer \"+token \n    };\n    node.status({fill:\"blue\",shape:\"dot\",text:\"Sending image...\"})\n    return [msg,null];\n}\nelse{\n    times_to_try = env.get(\"times_to_try\")\n    token = msg.token;\n    msg.data = msg.payload;\n    msg.method = \"POST\";\n    msg.url = \"https://tequ-api.eu-de.mybluemix.net/api/v1/image/add\"\n    msg.headers  = {\n                    \"Content-Type\": \"application/json\",\n                    'Authorization': \"Bearer \"+token \n    };\n    msg.statusCode = 401;\n    node.status({fill:\"red\",shape:\"dot\",text:\"msg.token is missing\"})\n    return [null,msg];\n}","outputs":2,"noerr":0,"initialize":"","finalize":"","libs":[],"x":560,"y":40,"wires":[["5b933476.fc386c"],["5b3e2fe4.4c3f9"]]},{"id":"5b3e2fe4.4c3f9","type":"switch","z":"fcd42407.59d1a8","name":"statusCode?","property":"statusCode","propertyType":"msg","rules":[{"t":"eq","v":"200","vt":"num"},{"t":"else"}],"checkall":"true","repair":false,"outputs":2,"x":690,"y":100,"wires":[["68394e6b.8b877"],["b6efc528.054bc8"]]},{"id":"f4f14ebd.6e975","type":"link out","z":"fcd42407.59d1a8","name":"","links":["d1c084fc.4da468"],"x":1275,"y":120,"wires":[]},{"id":"d1c084fc.4da468","type":"link in","z":"fcd42407.59d1a8","name":"Try again","links":["f4f14ebd.6e975"],"x":55,"y":100,"wires":[["a8257482.0d16e8"]]},{"id":"b6efc528.054bc8","type":"function","z":"fcd42407.59d1a8","name":"Format for resend","func":"times_to_try = env.get(\"times_to_try\")\n\nif(msg.times_to_try >= times_to_try){\n    node.status({fill:\"red\",shape:\"dot\",text:msg.statusCode+\": \"+msg.payload.message})\n    msg.times_to_try = msg.times_to_try + 1\n    return msg;\n}\nelse{\n    msg.payload = msg.data\n    msg.times_to_try = msg.times_to_try + 1\n    node.status({fill:\"yellow\",shape:\"dot\",text:\"Trying again... \"+msg.times_to_try+\"/\"+times_to_try})\n    return msg;\n}","outputs":1,"noerr":0,"initialize":"","finalize":"","libs":[],"x":950,"y":120,"wires":[["e8a7bd1f.28f73"]]},{"id":"e8a7bd1f.28f73","type":"delay","z":"fcd42407.59d1a8","name":"","pauseType":"random","timeout":"5","timeoutUnits":"seconds","rate":"1","nbRateUnits":"1","rateUnits":"second","randomFirst":"5","randomLast":"10","randomUnits":"seconds","drop":false,"x":1140,"y":120,"wires":[["f4f14ebd.6e975"]]},{"id":"9363fb9a.c3f578","type":"status","z":"fcd42407.59d1a8","name":"","scope":["f17ef03d.d18bf","b6efc528.054bc8","f6e7b71a.50b0f8","9fb35f6f.022b"],"x":900,"y":320,"wires":[[]]},{"id":"f6e7b71a.50b0f8","type":"function","z":"fcd42407.59d1a8","name":"Status","func":"node.status({fill:\"green\",shape:\"dot\",text:\"Image sent @\"+msg.sent_timestamp+\" in \"+msg.send_time+\" ms\"})\nreturn msg;\n","outputs":1,"noerr":0,"initialize":"","finalize":"","libs":[],"x":1170,"y":60,"wires":[[]]},{"id":"aba7379c.9aec88","type":"change","z":"fcd42407.59d1a8","name":"timer","rules":[{"t":"set","p":"start","pt":"msg","to":"","tot":"date"}],"action":"","property":"","from":"","to":"","reg":false,"x":390,"y":40,"wires":[["f17ef03d.d18bf"]]},{"id":"68394e6b.8b877","type":"change","z":"fcd42407.59d1a8","name":"end timer","rules":[{"t":"set","p":"send_time","pt":"msg","to":"$millis() - msg.start","tot":"jsonata"}],"action":"","property":"","from":"","to":"","reg":false,"x":920,"y":60,"wires":[["8a74eebe.fdbc8"]]},{"id":"80c6d087.30ca7","type":"change","z":"fcd42407.59d1a8","name":"","rules":[{"t":"set","p":"times_to_try","pt":"msg","to":"0","tot":"num"}],"action":"","property":"","from":"","to":"","reg":false,"x":200,"y":40,"wires":[["aba7379c.9aec88"]]},{"id":"a8257482.0d16e8","type":"switch","z":"fcd42407.59d1a8","name":"times_to_try?","property":"times_to_try","propertyType":"msg","rules":[{"t":"gt","v":"times_to_try","vt":"env"},{"t":"else"}],"checkall":"true","repair":false,"outputs":2,"x":220,"y":100,"wires":[["235873ad.c9440c"],["aba7379c.9aec88"]]},{"id":"9fb35f6f.022b","type":"file","z":"fcd42407.59d1a8","name":"","filename":"","appendNewline":true,"createDir":true,"overwriteFile":"false","encoding":"none","x":610,"y":260,"wires":[["ca8420ca.fbcfa"]]},{"id":"3faa6785.3e0888","type":"function","z":"fcd42407.59d1a8","name":"Format filename","func":"name = (msg.data.properties.object.data.original.objectname).split(\".\")[0]\nmsg.filename = \"images\\\\\"+msg.ts_for_file+\"\\\\\"+name+\".json\";\nmsg.payload = msg.data;\nreturn msg;","outputs":1,"noerr":0,"initialize":"","finalize":"","libs":[],"x":440,"y":260,"wires":[["9fb35f6f.022b"]]},{"id":"ca8420ca.fbcfa","type":"function","z":"fcd42407.59d1a8","name":"Update status","func":"node.status({fill:\"blue\",shape:\"dot\",text:\"Payload saved to file.\"})","outputs":0,"noerr":0,"initialize":"","finalize":"","libs":[],"x":780,"y":260,"wires":[]},{"id":"235873ad.c9440c","type":"moment","z":"fcd42407.59d1a8","name":"","topic":"","input":"","inputType":"date","inTz":"ETC/UTC","adjAmount":0,"adjType":"days","adjDir":"add","format":"YYYY-MM-DD","locale":"en-US","output":"ts_for_file","outputType":"msg","outTz":"ETC/UTC","x":220,"y":260,"wires":[["3faa6785.3e0888"]]},{"id":"8a74eebe.fdbc8","type":"moment","z":"fcd42407.59d1a8","name":"ts","topic":"","input":"","inputType":"date","inTz":"Europe/Kiev","adjAmount":0,"adjType":"days","adjDir":"add","format":"HH:mm:ss","locale":"en-US","output":"sent_timestamp","outputType":"msg","outTz":"Europe/Kiev","x":1050,"y":60,"wires":[["f6e7b71a.50b0f8"]]},{"id":"f9d2db3f96a7e699","type":"subflow:fcd42407.59d1a8","z":"d994f01a5b816cf9","name":"","x":1020,"y":1360,"wires":[[]]}]
+[
+    {
+        "id": "5490731dea07bccf",
+        "type": "subflow",
+        "name": "[API] Send image",
+        "info": "This node sends single image to Tequ-API. \n\nEndpoint used is /image/add\n\nYou need to add Bearer token to msg.token.\n\nYou can configure maximum times to try sending by parameter \"times_to_try\" in node config.",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 40,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "32592b726d7ef659"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1220,
+                "y": 60,
+                "wires": [
+                    {
+                        "id": "b2436bc68d70b57e",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "API_URL",
+                "type": "str",
+                "value": "https://api.tequ.fi"
+            },
+            {
+                "name": "times_to_try",
+                "type": "num",
+                "value": "3",
+                "ui": {
+                    "type": "spinner",
+                    "opts": {
+                        "min": 1,
+                        "max": 10
+                    }
+                }
+            },
+            {
+                "name": "save_failed",
+                "type": "bool",
+                "value": "true",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "bool",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "path",
+                "type": "str",
+                "value": "/home/nvidia/"
+            }
+        ],
+        "meta": {
+            "license": "MIT"
+        },
+        "color": "#FFCC66",
+        "inputLabels": [
+            "Data in"
+        ],
+        "outputLabels": [
+            "Data out"
+        ],
+        "icon": "node-red/white-globe.svg",
+        "status": {
+            "x": 1180,
+            "y": 340,
+            "wires": [
+                {
+                    "id": "f64274a273115242",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "ddc715198e6390de",
+        "type": "http request",
+        "z": "5490731dea07bccf",
+        "name": "POST",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": true,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 450,
+        "y": 100,
+        "wires": [
+            [
+                "7d4aa034ffbce222"
+            ]
+        ]
+    },
+    {
+        "id": "0f1e02eaa9a48e11",
+        "type": "function",
+        "z": "5490731dea07bccf",
+        "name": "HTTP request",
+        "func": "let times_to_try;\nlet token;\n\nif('token' in msg){\n    times_to_try = env.get(\"times_to_try\")\n    token = msg.token;\n    msg.data = msg.payload;\n    msg.method = \"POST\";\n    msg.url = env.get(\"API_URL\")+\"/api/v1/image/add\"\n    msg.headers  = {\n                    \"Content-Type\": \"application/json\",\n                    'Authorization': \"Bearer \"+token \n    };\n    node.status({fill:\"blue\",shape:\"dot\",text:\"Sending image...\"})\n    return [msg,null];\n}\nelse{\n    times_to_try = env.get(\"times_to_try\")\n    token = msg.token;\n    msg.data = msg.payload;\n    msg.method = \"POST\";\n    msg.url = env.get(\"API_URL\")+\"/api/v1/image/add\"\n    msg.headers  = {\n                    \"Content-Type\": \"application/json\",\n                    'Authorization': \"Bearer \"+token \n    };\n    msg.statusCode = 401;\n    node.status({fill:\"red\",shape:\"dot\",text:\"msg.token is missing\"})\n    return [null,msg];\n}",
+        "outputs": 2,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 40,
+        "wires": [
+            [
+                "ddc715198e6390de"
+            ],
+            [
+                "7d4aa034ffbce222"
+            ]
+        ]
+    },
+    {
+        "id": "7d4aa034ffbce222",
+        "type": "switch",
+        "z": "5490731dea07bccf",
+        "name": "statusCode?",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "201",
+                "vt": "num"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 630,
+        "y": 100,
+        "wires": [
+            [
+                "1460a0d43f1ce091"
+            ],
+            [
+                "1460a0d43f1ce091"
+            ],
+            [
+                "843c03d171bb31ca"
+            ]
+        ]
+    },
+    {
+        "id": "6dd7676a598c4d74",
+        "type": "link out",
+        "z": "5490731dea07bccf",
+        "name": "",
+        "links": [
+            "68f99ea9e6a88bca"
+        ],
+        "x": 1175,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "68f99ea9e6a88bca",
+        "type": "link in",
+        "z": "5490731dea07bccf",
+        "name": "Try again",
+        "links": [
+            "6dd7676a598c4d74"
+        ],
+        "x": 55,
+        "y": 100,
+        "wires": [
+            [
+                "1592c453fe04fc08"
+            ]
+        ]
+    },
+    {
+        "id": "843c03d171bb31ca",
+        "type": "function",
+        "z": "5490731dea07bccf",
+        "name": "Format for resend",
+        "func": "let times_to_try = env.get(\"times_to_try\")\n\nif(msg.times_to_try >= times_to_try){\n    node.status({fill:\"red\",shape:\"dot\",text:msg.statusCode+\": \"+msg.payload.message})\n    msg.times_to_try = msg.times_to_try + 1\n    return msg;\n}\nelse{\n    msg.payload = msg.data\n    msg.times_to_try = msg.times_to_try + 1\n    node.status({fill:\"yellow\",shape:\"dot\",text:\"Trying again... \"+msg.times_to_try+\"/\"+times_to_try})\n    return msg;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 120,
+        "wires": [
+            [
+                "e7caa1bcc1ac02cf"
+            ]
+        ]
+    },
+    {
+        "id": "e7caa1bcc1ac02cf",
+        "type": "delay",
+        "z": "5490731dea07bccf",
+        "name": "",
+        "pauseType": "random",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "5",
+        "randomLast": "10",
+        "randomUnits": "seconds",
+        "drop": false,
+        "outputs": 1,
+        "x": 1020,
+        "y": 120,
+        "wires": [
+            [
+                "6dd7676a598c4d74"
+            ]
+        ]
+    },
+    {
+        "id": "f64274a273115242",
+        "type": "status",
+        "z": "5490731dea07bccf",
+        "name": "",
+        "scope": [
+            "0f1e02eaa9a48e11",
+            "843c03d171bb31ca",
+            "b2436bc68d70b57e",
+            "b56c27eae6e23998",
+            "d49fcdda1c951a2a"
+        ],
+        "x": 1040,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b2436bc68d70b57e",
+        "type": "function",
+        "z": "5490731dea07bccf",
+        "name": "Status",
+        "func": "node.status({fill:\"green\",shape:\"dot\",text:\"Image sent @\"+msg.sent_timestamp+\" in \"+msg.send_time+\" ms\"})\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1070,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1899434d53c47450",
+        "type": "change",
+        "z": "5490731dea07bccf",
+        "name": "timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "start",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 390,
+        "y": 40,
+        "wires": [
+            [
+                "0f1e02eaa9a48e11"
+            ]
+        ]
+    },
+    {
+        "id": "1460a0d43f1ce091",
+        "type": "change",
+        "z": "5490731dea07bccf",
+        "name": "end timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "send_time",
+                "pt": "msg",
+                "to": "$millis() - msg.start",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 800,
+        "y": 60,
+        "wires": [
+            [
+                "63341c4eac88b296"
+            ]
+        ]
+    },
+    {
+        "id": "32592b726d7ef659",
+        "type": "change",
+        "z": "5490731dea07bccf",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "times_to_try",
+                "pt": "msg",
+                "to": "0",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 200,
+        "y": 40,
+        "wires": [
+            [
+                "1899434d53c47450"
+            ]
+        ]
+    },
+    {
+        "id": "1592c453fe04fc08",
+        "type": "switch",
+        "z": "5490731dea07bccf",
+        "name": "times_to_try?",
+        "property": "times_to_try",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "times_to_try",
+                "vt": "env"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 180,
+        "y": 100,
+        "wires": [
+            [
+                "cded1950324c3810"
+            ],
+            [
+                "1899434d53c47450"
+            ]
+        ]
+    },
+    {
+        "id": "b56c27eae6e23998",
+        "type": "file",
+        "z": "5490731dea07bccf",
+        "name": "",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 620,
+        "y": 220,
+        "wires": [
+            [
+                "d49fcdda1c951a2a"
+            ]
+        ]
+    },
+    {
+        "id": "4fca32264c586d46",
+        "type": "function",
+        "z": "5490731dea07bccf",
+        "name": "Format filename",
+        "func": "let name = (msg.data.properties.object.data.original.objectname).split(\".\")[0]\nconst platform = os.platform()\nlet base_path = env.get(\"path\")\n\nif (platform == \"win32\"){\n    msg.filename = base_path + \"\\\\\" + \"tequ_api_images\" + \"\\\\\" +msg.ts_for_file + \"\\\\\" + name + \".json\";\n}\nelse{\n    msg.filename = base_path + \"/\" + \"tequ_api_images\" + \"/\" + msg.ts_for_file + \"/\" + name + \".json\";\n}\nmsg.payload = msg.data;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [
+            {
+                "var": "os",
+                "module": "os"
+            }
+        ],
+        "x": 440,
+        "y": 220,
+        "wires": [
+            [
+                "b56c27eae6e23998"
+            ]
+        ]
+    },
+    {
+        "id": "d49fcdda1c951a2a",
+        "type": "function",
+        "z": "5490731dea07bccf",
+        "name": "Update status",
+        "func": "node.status({fill:\"blue\",shape:\"dot\",text:\"Payload saved to file.\"})",
+        "outputs": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "519a9ae80be04433",
+        "type": "moment",
+        "z": "5490731dea07bccf",
+        "name": "",
+        "topic": "",
+        "input": "",
+        "inputType": "date",
+        "inTz": "ETC/UTC",
+        "adjAmount": 0,
+        "adjType": "days",
+        "adjDir": "add",
+        "format": "YYYY-MM-DD",
+        "locale": "en-US",
+        "output": "ts_for_file",
+        "outputType": "msg",
+        "outTz": "ETC/UTC",
+        "x": 200,
+        "y": 220,
+        "wires": [
+            [
+                "4fca32264c586d46"
+            ]
+        ]
+    },
+    {
+        "id": "63341c4eac88b296",
+        "type": "moment",
+        "z": "5490731dea07bccf",
+        "name": "ts",
+        "topic": "",
+        "input": "",
+        "inputType": "date",
+        "inTz": "Europe/Kiev",
+        "adjAmount": 0,
+        "adjType": "days",
+        "adjDir": "add",
+        "format": "HH:mm:ss",
+        "locale": "en-US",
+        "output": "sent_timestamp",
+        "outputType": "msg",
+        "outTz": "Europe/Kiev",
+        "x": 950,
+        "y": 60,
+        "wires": [
+            [
+                "b2436bc68d70b57e"
+            ]
+        ]
+    },
+    {
+        "id": "cded1950324c3810",
+        "type": "switch",
+        "z": "5490731dea07bccf",
+        "name": "Save failed",
+        "property": "save_failed",
+        "propertyType": "env",
+        "rules": [
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 170,
+        "y": 160,
+        "wires": [
+            [
+                "519a9ae80be04433"
+            ]
+        ]
+    },
+    {
+        "id": "aebe5e8546caff43",
+        "type": "subflow:5490731dea07bccf",
+        "z": "7509ad250bd80ba5",
+        "name": "",
+        "env": [
+            {
+                "name": "path",
+                "value": "/tmp/",
+                "type": "str"
+            },
+            {
+                "name": "API_BASE_URL",
+                "value": "http://tequ-api-node-red-app",
+                "type": "str"
+            }
+        ],
+        "x": 370,
+        "y": 200,
+        "wires": [
+            [
+                "42802f21596284b6"
+            ]
+        ]
+    }
+]
