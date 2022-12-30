@@ -1,0 +1,115 @@
+[
+    {
+        "id": "b036485c08b613b3",
+        "type": "subflow",
+        "name": "Pre-process",
+        "info": "Converts input image (msg.payload) to Tensor.\r\n\r\nOutputs results in \"msg.tensor\".\r\n\r\n",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 60,
+                "y": 60,
+                "wires": [
+                    {
+                        "id": "d064ba71996bbd40"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 380,
+                "y": 60,
+                "wires": [
+                    {
+                        "id": "d064ba71996bbd40",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {
+            "module": "tequ-image-to-tensor",
+            "version": "0.0.1",
+            "author": "juha.autioniemi@lapinamk.fi",
+            "desc": "Converts image to tensor.",
+            "license": "MIT"
+        },
+        "color": "#3FADB5",
+        "icon": "node-red/swap.svg",
+        "status": {
+            "x": 380,
+            "y": 140,
+            "wires": [
+                {
+                    "id": "f7d80c6f26cd644c",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "d064ba71996bbd40",
+        "type": "function",
+        "z": "b036485c08b613b3",
+        "name": "Image to tensor",
+        "func": "//Get a worker from the pool and execute the task\nconst start = Date.now();\nconst image = msg.payload;\nlet piscina = context.get(\"piscina\")\nlet pre_process_time;\n\ntry{\n    let result = await piscina.run({jpeg:image,gzip:false});\n       \n    msg.tensor = {\n        \"image\":image,\n        \"data\":Buffer.from(result.tensorBuffer),\n        \"tensor_shape\":result.tensorShape,\n        \"inference_header_length\":result.inference_header_length,\n        \"image_tensor_buffer_length\":result.image_tensor_buffer_length\n    }\n    \n    pre_process_time =  Date.now() - start;\n    msg.data.properties.computer_vision.pre_process_ms = pre_process_time\n    node.status({fill:\"green\",shape:\"dot\",text:pre_process_time+\" ms\"});    \n    return msg;\n}\ncatch(e){\n    node.status({fill:\"red\",shape:\"dot\",text:\"Convert failed...\"});    \n    node.error(\"Image to tensor conversion failed. Probably input is not an image buffer.\", msg);\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "let nr_folder;\nconst scriptName = 'numjs_piscina_worker.js';\nvar worker_path = \"\"\nconst platform = os.platform()\nvar worker_script;\nlet sep;\nlet numberOfWorkers;\n\nnode.warn(\"Platform: \" + platform)\n\nif(platform == \"win32\"){\n   sep = \"\\\\\"\n   nr_folder = path.resolve()\n   worker_path = path.resolve(scriptName)\n   worker_script = \"console.log(\\\"Worker starting...\\\");\\r\\nlet nj;\\r\\nlet zlib;\\r\\n\\r\\n\\r\\ntry{\\r\\n\\tnj = require(\\\"./node_modules\\//numjs\\\")\\r\\n}\\r\\ncatch(e){\\r\\n\\tconsole.log(\\\"Loading numjs failed\\\")\\r\\n\\tconsole.log(e)\\r\\n}\\r\\n\\r\\ntry{\\r\\n\\tzlib = require(\\'zlib\\');\\r\\n}\\r\\ncatch(e){\\r\\n\\tconsole.log(e)\\r\\n}\\r\\n\\r\\nmodule.exports = async ({jpeg,gzip}) => {\\r\\n\\ttry{\\r\\n\\t\\tconst start = Date.now();\\t\\r\\n\\t\\tconst img = nj.images.read(jpeg);\\r\\n\\t\\tconst dataBuffer = Buffer.from(img.selection.data);\\r\\n\\t\\tconst shape = [1].concat(img.shape);\\r\\n\\t\\tconst image_tensor_buffer_length = dataBuffer.length\\r\\n\\t\\t\\r\\n\\t\\t\\r\\n\\t\\tconst inference_header = {\\r\\n\\t\\t  \\\"model_name\\\" : \\\"test\\\",\\r\\n\\t\\t  \\\"inputs\\\" : [\\r\\n\\t\\t\\t{\\r\\n\\t\\t\\t  \\\"name\\\" : \\\"input_tensor\\\",\\r\\n\\t\\t\\t  \\\"shape\\\" : shape,\\r\\n\\t\\t\\t  \\\"datatype\\\" : \\\"UINT8\\\",\\r\\n\\t\\t\\t  \\\"parameters\\\" : {\\r\\n\\t\\t\\t\\t  \\\"binary_data_size\\\":image_tensor_buffer_length\\r\\n\\t\\t\\t  }\\r\\n\\t\\t\\t}\\r\\n\\t\\t  ],\\r\\n\\t\\t  \\\"outputs\\\" : [\\r\\n\\t\\t\\t{\\r\\n\\t\\t\\t  \\\"name\\\" : \\\"detection_scores\\\",\\r\\n\\t\\t\\t  \\\"parameters\\\" : {\\r\\n\\t\\t\\t\\t\\\"binary_data\\\" : false\\r\\n\\t\\t\\t  }\\r\\n\\t\\t\\t},\\r\\n\\t\\t\\t {\\r\\n\\t\\t\\t  \\\"name\\\" : \\\"detection_boxes\\\",\\r\\n\\t\\t\\t  \\\"parameters\\\" : {\\r\\n\\t\\t\\t\\t\\\"binary_data\\\" : false\\r\\n\\t\\t\\t  }\\r\\n\\t\\t\\t},\\r\\n\\t\\t\\t {\\r\\n\\t\\t\\t  \\\"name\\\" : \\\"detection_classes\\\",\\r\\n\\t\\t\\t  \\\"parameters\\\" : {\\r\\n\\t\\t\\t\\t\\\"binary_data\\\" : false\\r\\n\\t\\t\\t  }\\r\\n\\t\\t\\t}\\r\\n\\t\\t  ]\\r\\n\\t\\t}\\r\\n\\r\\n\\t\\tconst inference_header_buffer = Buffer.from(JSON.stringify(inference_header))\\r\\n\\t\\tconst inference_header_length = inference_header_buffer.length\\r\\n\\t\\tlet payload = Buffer.concat([inference_header_buffer,dataBuffer])\\r\\n\\t\\ttime_ms =  Date.now() - start;\\r\\n\\t\\t\\r\\n\\t\\tif(gzip){\\r\\n\\t\\t\\tpayload = zlib.gzipSync(payload)\\r\\n\\t\\t}\\r\\n\\t\\t\\r\\n\\t\\tresult = {\\r\\n\\t\\t\\t\\\"tensorBuffer\\\" : payload,\\r\\n\\t\\t\\t\\\"Content-Type\\\" : \\\"application\\/octet-stream\\\",\\r\\n\\t\\t\\t\\\"inference_header_length\\\": inference_header_length,\\r\\n\\t\\t\\t\\\"image_tensor_buffer_length\\\":image_tensor_buffer_length,\\r\\n\\t\\t\\t\\\"tensorShape\\\":shape,\\r\\n\\t\\t\\t\\\"processing_time\\\":time_ms,\\r\\n\\t\\t\\t\\\"payload\\\":jpeg\\r\\n\\t\\t}\\t\\t\\r\\n\\t\\treturn result\\t\\t\\r\\n\\t}\\r\\n\\tcatch(e){\\r\\n\\t\\tconsole.log(e)\\r\\n\\t}\\r\\n\\t\\t\\r\\n}\"\n}\nelse{\n   nr_folder = path.resolve(\".node-red\")\n   node.warn(nr_folder)\n   worker_path = path.resolve(\".node-red\",scriptName)\n   node.warn(worker_path)\n   sep = \"/\" \n   worker_script = \"console.log(\\\"Worker starting...\\\");\\r\\nlet nj;\\r\\nlet zlib;\\r\\n\\r\\n\\r\\ntry{\\r\\n\\tnj = require(\\\"./node_modules\\//numjs\\\")\\r\\n}\\r\\ncatch(e){\\r\\n\\tconsole.log(\\\"Loading numjs failed\\\")\\r\\n\\tconsole.log(e)\\r\\n}\\r\\n\\r\\ntry{\\r\\n\\tzlib = require(\\'zlib\\');\\r\\n}\\r\\ncatch(e){\\r\\n\\tconsole.log(e)\\r\\n}\\r\\n\\r\\nmodule.exports = async ({jpeg,gzip}) => {\\r\\n\\ttry{\\r\\n\\t\\tconst start = Date.now();\\t\\r\\n\\t\\tconst img = nj.images.read(jpeg);\\r\\n\\t\\tconst dataBuffer = Buffer.from(img.selection.data);\\r\\n\\t\\tconst shape = [1].concat(img.shape);\\r\\n\\t\\tconst image_tensor_buffer_length = dataBuffer.length\\r\\n\\t\\t\\r\\n\\t\\t\\r\\n\\t\\tconst inference_header = {\\r\\n\\t\\t  \\\"model_name\\\" : \\\"test\\\",\\r\\n\\t\\t  \\\"inputs\\\" : [\\r\\n\\t\\t\\t{\\r\\n\\t\\t\\t  \\\"name\\\" : \\\"input_tensor\\\",\\r\\n\\t\\t\\t  \\\"shape\\\" : shape,\\r\\n\\t\\t\\t  \\\"datatype\\\" : \\\"UINT8\\\",\\r\\n\\t\\t\\t  \\\"parameters\\\" : {\\r\\n\\t\\t\\t\\t  \\\"binary_data_size\\\":image_tensor_buffer_length\\r\\n\\t\\t\\t  }\\r\\n\\t\\t\\t}\\r\\n\\t\\t  ],\\r\\n\\t\\t  \\\"outputs\\\" : [\\r\\n\\t\\t\\t{\\r\\n\\t\\t\\t  \\\"name\\\" : \\\"detection_scores\\\",\\r\\n\\t\\t\\t  \\\"parameters\\\" : {\\r\\n\\t\\t\\t\\t\\\"binary_data\\\" : false\\r\\n\\t\\t\\t  }\\r\\n\\t\\t\\t},\\r\\n\\t\\t\\t {\\r\\n\\t\\t\\t  \\\"name\\\" : \\\"detection_boxes\\\",\\r\\n\\t\\t\\t  \\\"parameters\\\" : {\\r\\n\\t\\t\\t\\t\\\"binary_data\\\" : false\\r\\n\\t\\t\\t  }\\r\\n\\t\\t\\t},\\r\\n\\t\\t\\t {\\r\\n\\t\\t\\t  \\\"name\\\" : \\\"detection_classes\\\",\\r\\n\\t\\t\\t  \\\"parameters\\\" : {\\r\\n\\t\\t\\t\\t\\\"binary_data\\\" : false\\r\\n\\t\\t\\t  }\\r\\n\\t\\t\\t}\\r\\n\\t\\t  ]\\r\\n\\t\\t}\\r\\n\\r\\n\\t\\tconst inference_header_buffer = Buffer.from(JSON.stringify(inference_header))\\r\\n\\t\\tconst inference_header_length = inference_header_buffer.length\\r\\n\\t\\tlet payload = Buffer.concat([inference_header_buffer,dataBuffer])\\r\\n\\t\\ttime_ms =  Date.now() - start;\\r\\n\\t\\t\\r\\n\\t\\tif(gzip){\\r\\n\\t\\t\\tpayload = zlib.gzipSync(payload)\\r\\n\\t\\t}\\r\\n\\t\\t\\r\\n\\t\\tresult = {\\r\\n\\t\\t\\t\\\"tensorBuffer\\\" : payload,\\r\\n\\t\\t\\t\\\"Content-Type\\\" : \\\"application\\/octet-stream\\\",\\r\\n\\t\\t\\t\\\"inference_header_length\\\": inference_header_length,\\r\\n\\t\\t\\t\\\"image_tensor_buffer_length\\\":image_tensor_buffer_length,\\r\\n\\t\\t\\t\\\"tensorShape\\\":shape,\\r\\n\\t\\t\\t\\\"processing_time\\\":time_ms,\\r\\n\\t\\t\\t\\\"payload\\\":jpeg\\r\\n\\t\\t}\\t\\t\\r\\n\\t\\treturn result\\t\\t\\r\\n\\t}\\r\\n\\tcatch(e){\\r\\n\\t\\tconsole.log(e)\\r\\n\\t}\\r\\n\\t\\t\\r\\n}\"\n}\n\ntry{\n    numberOfWorkers = 2\n}\ncatch(e){\n    node.warn(\"Loading numberOfWorkers from env variable failed... using default value = 1\")\n    node.warn(e)\n    numberOfWorkers = 1\n}\n\nfs.writeFile(worker_path, worker_script, function (err) {\n    if (err) {\n        node.error(\"Cannot create web_worker_test_script.js file: \" + err);\n    }\n});\n\ntry{\n    const piscina = new pis.Piscina({\n      filename: worker_path,\n      maxThreads: numberOfWorkers\n    });\n    \n    context.set(\"piscina\",piscina)\n    node.status({fill:\"green\", shape:\"dot\", text:\"Piscina initialized\"});\n}\ncatch(error){\n    node.warn(error)\n    node.status({fill:\"red\", shape:\"dot\", text:\"Initializing piscina failed...\"});\n}",
+        "finalize": "// Code added here will be run when the\n// node is being stopped or re-deployed.\ncontext.set(\"piscina\",{})",
+        "libs": [
+            {
+                "var": "pis",
+                "module": "piscina"
+            },
+            {
+                "var": "fs",
+                "module": "fs"
+            },
+            {
+                "var": "os",
+                "module": "os"
+            },
+            {
+                "var": "process",
+                "module": "process"
+            },
+            {
+                "var": "path",
+                "module": "path"
+            }
+        ],
+        "x": 220,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f7d80c6f26cd644c",
+        "type": "status",
+        "z": "b036485c08b613b3",
+        "name": "",
+        "scope": null,
+        "x": 240,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "86eaea0146399a3a",
+        "type": "subflow:b036485c08b613b3",
+        "z": "022e42e3f5d0335d",
+        "name": "",
+        "x": 490,
+        "y": 320,
+        "wires": [
+            [
+                "ebae975c6beab89b"
+            ]
+        ]
+    }
+]
