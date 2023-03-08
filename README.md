@@ -41,7 +41,8 @@ Example how to use these subflows as a functional computer vision system
 | [AI] Detect-Triton | 0.0.1 | Make prediction on image using Tensorflow SavedModel hosted in NVIDIA Triton Inference Server | <a href="subflows/ai-detect-triton.json">json</a> |
 | [AI] Detect-acv           | 0.0.1          | Make prediction on image using Tensorflow.js model trained and exported from Microsoft Azure Custom Vision | <a href="subflows/ai-detect-acv.json">json</a>  |
 | [AI] Crop & TM           | 0.0.1          | Crops results from '[AI] detect subflows' and classify cropped area(s) using Tensorflow.js model trained and exported from Google Teachable Machine. | <a href="subflows/ai-crop-tm.json">json</a> |
-| [IMG] Annotate	            | 0.0.1           | Annotates prediction results from [AI] Inference subflow. | <a href="subflows/img-annotate.json">json</a> |
+| [IMG] Annotate	            | 0.0.1           | Annotates prediction results from [AI] Inference subflow. (uses sharp)| <a href="subflows/img-annotate.json">json</a> |
+| [IMG] Annotate [TF]         | 0.0.1           | Annotates prediction results from [AI] Inference subflow. (uses tfjs-node-gpu) | <a href="subflows/img-annotate.json">json</a> |
 | [IMG] Thumbnails            | 0.0.1           | Creates thumbnails of original image and annotated image. | <a href="subflows/img-thumbnails.json">json</a> |
 | [IMG] Crop detected object(s) | 0.0.1     | Creates thumbnails of original image and annotated image. | <a href="subflows/img-crop-detected-object.json">json</a> |
 | [API] Get Token             | 0.0.1           | Retrieve token from Tequ-API. | <a href="subflows/api-get-token.json">json</a> |
@@ -49,7 +50,8 @@ Example how to use these subflows as a functional computer vision system
 | [API] Send image    | 0.0.1   | Send image to Tequ-API. Saves image to local filesystem if API is not available. | <a href="subflows/api-add-image.json">json</a> |
 | [API] Add video clip   | 0.0.1  | Send image to Tequ-API. Saves image to local filesystem if API is not available. | <a href="subflows/api-add-video.json">json</a> |
 | [API] Operation            | 0.0.1            | **N/A** | <a href="subflows/api-operation.json">json</a> |
-| Parse JPEG | 0.0.1     | Parse and pre-process JPEG image or image stream | <a href="subflows/Parse%20JPEG.json">json</a> 
+| Parse JPEG | 0.0.1     | Parse and pre-process JPEG image or image stream (uses sharp-library)| <a href="subflows/Parse%20JPEG.json">json</a> 
+| Parse JPEG [TF] | 0.0.1     | Parse and pre-process JPEG image or image stream (uses tfjs-node-gpu)| <a href="subflows/Parse%20JPEG.json">json</a> 
 | Pre-process [TF]           | 0.0.1            | Pre-process image for Triton Inference Server using tfjs-node-gpu | <a href="subflows/Pre-process [TF].json">json</a>
 | Thumbnail [TF]           | 0.0.1            | Create thumbnail using tfjs-node-gpu | <a href="subflows/tf-thumbnail.json">json</a>
 | Pre-process                | 0.0.1            | Pre-process image for Triton Inference Server using numjs and piscina | <a href="subflows/Pre-process.json">json</a> | Triton request | 0.0.1     | Send pre-processed image to Triton Inference Server | <a href="subflows/Triton%20request.json">json</a> 
