@@ -1,0 +1,515 @@
+[
+    {
+        "id": "dc2b46484141f051",
+        "type": "subflow",
+        "name": "Parse JPEG [TF]",
+        "info": "",
+        "category": "Tequ-API Client",
+        "in": [
+            {
+                "x": 60,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "955eeab05409cd61"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1100,
+                "y": 600,
+                "wires": [
+                    {
+                        "id": "03ba536e0dc79eeb",
+                        "port": 1
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "is_stream",
+                "type": "bool",
+                "value": "false",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "bool",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "latitude",
+                "type": "num",
+                "value": "66.503059",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "longitude",
+                "type": "num",
+                "value": "25.726967",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "thumbnail",
+                "type": "bool",
+                "value": "true",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "bool",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "width",
+                "type": "num",
+                "value": "50",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "bin",
+                            "env"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "height",
+                "type": "num",
+                "value": "50",
+                "ui": {
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num",
+                            "env"
+                        ]
+                    }
+                }
+            }
+        ],
+        "meta": {
+            "module": "tequ-parse-jpeg-tf",
+            "version": "0.0.1",
+            "author": "juha.autioniemi@lapinamk.fi",
+            "desc": "Parse JPEG image and add metadata.",
+            "license": "MIT"
+        },
+        "color": "#3FADB5",
+        "icon": "font-awesome/fa-picture-o",
+        "status": {
+            "x": 1100,
+            "y": 660,
+            "wires": [
+                {
+                    "id": "898429879305e246",
+                    "port": 0
+                }
+            ]
+        }
+    },
+    {
+        "id": "2eb1056d16ac1fc6",
+        "type": "image-info",
+        "z": "dc2b46484141f051",
+        "name": "",
+        "x": 210,
+        "y": 400,
+        "wires": [
+            [
+                "83e4ef6a35b0051d"
+            ]
+        ]
+    },
+    {
+        "id": "83e4ef6a35b0051d",
+        "type": "exif",
+        "z": "dc2b46484141f051",
+        "name": "",
+        "mode": "normal",
+        "property": "payload",
+        "x": 190,
+        "y": 460,
+        "wires": [
+            [
+                "71d80411eeec75ec"
+            ]
+        ]
+    },
+    {
+        "id": "8521dc3a9bb265e4",
+        "type": "moment",
+        "z": "dc2b46484141f051",
+        "name": "",
+        "topic": "",
+        "input": "",
+        "inputType": "date",
+        "inTz": "ETC/UTC",
+        "adjAmount": 0,
+        "adjType": "days",
+        "adjDir": "add",
+        "format": "",
+        "locale": "en-US",
+        "output": "utc_timestamp",
+        "outputType": "msg",
+        "outTz": "Europe/Helsinki",
+        "x": 240,
+        "y": 220,
+        "wires": [
+            [
+                "156dc7f50cf9ae02"
+            ]
+        ]
+    },
+    {
+        "id": "156dc7f50cf9ae02",
+        "type": "moment",
+        "z": "dc2b46484141f051",
+        "name": "",
+        "topic": "",
+        "input": "utc_timestamp",
+        "inputType": "msg",
+        "inTz": "ETC/UTC",
+        "adjAmount": 0,
+        "adjType": "days",
+        "adjDir": "add",
+        "format": "YYYY-MM-DD HH:mm:ss",
+        "locale": "en-US",
+        "output": "local_timestamp",
+        "outputType": "msg",
+        "outTz": "Europe/Helsinki",
+        "x": 240,
+        "y": 280,
+        "wires": [
+            [
+                "5e837e3f956424a5"
+            ]
+        ]
+    },
+    {
+        "id": "5e837e3f956424a5",
+        "type": "moment",
+        "z": "dc2b46484141f051",
+        "name": "",
+        "topic": "",
+        "input": "utc_timestamp",
+        "inputType": "msg",
+        "inTz": "ETC/UTC",
+        "adjAmount": 0,
+        "adjType": "days",
+        "adjDir": "add",
+        "format": "x",
+        "locale": "en-US",
+        "output": "unix_timestamp",
+        "outputType": "msg",
+        "outTz": "ETC/UTC",
+        "x": 240,
+        "y": 340,
+        "wires": [
+            [
+                "2eb1056d16ac1fc6"
+            ]
+        ]
+    },
+    {
+        "id": "898429879305e246",
+        "type": "status",
+        "z": "dc2b46484141f051",
+        "name": "",
+        "scope": [
+            "03ba536e0dc79eeb"
+        ],
+        "x": 820,
+        "y": 660,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "98e82be483a95bdd",
+        "type": "function",
+        "z": "dc2b46484141f051",
+        "name": "Reformat data",
+        "func": "let type;\nlet random_name = uuid.v4();\nlet image_type = msg.type;\nlet file_extension;\nlet latitude = Number(env.get(\"latitude\"))\nlet longitude = Number(env.get(\"longitude\"))\nlet unix_timestamp = parseInt(msg.unix_timestamp);\nlet serial;\ntry{\n    serial = (msg.exif.image.ImageDescription).split(\"_\")[1];\n}\ncatch(e){\n    serial = \"unknown\"\n}\n\nlet datasource = serial;\n\nif (image_type == \"jpg\") {\n    image_type = \"image/jpeg\"\n    file_extension = \".jpg\"\n}\nelse if (image_type == \"png\") {\n    image_type = \"image/png\"\n    file_extension = \".png\"\n}\n\nmsg.topic = serial;\nmsg.datasource = serial;\nmsg.random_name = random_name;\nmsg.file_extension = file_extension;\n\nlet parameters = {\n    \"owner\": msg.exif.image.Copyright,\n    \"version\": msg.exif.image.Software,\n    \"model\": msg.exif.image.Model,\n    \"serial\": serial,\n    \"manufacturer\": msg.exif.image.Make\n}\n\nmsg.data = {\n    \"type\": \"Feature\",\n    \"geometry\": {\n        \"type\": \"Point\",\n        \"coordinates\": [longitude, latitude]\n    },\n    \"properties\": {\n        \"datasource\": datasource,\n        \"local_timestamp\": msg.local_timestamp,\n        \"utc_timestamp\": msg.utc_timestamp,\n        \"unix_timestamp\": unix_timestamp,\n        \"cos\": {\n            \"bucket\": \"\",\n            \"region\": \"\",\n            \"service_id\": \"\"\n        },\n        \"object\": {\n            \"type\": image_type,\n            \"data\": {\n                \"width\": msg.width,\n                \"height\": msg.height,\n                \"size\": (msg.payload).length,\n                \"exif\": msg.exif,\n                \"parameters\": parameters,\n                \"original\": {\n                    \"image\": (msg.payload).toString('base64'),\n                    \"objectname\": datasource + \"-\" + random_name + file_extension,\n                    \"thumbnail\": (msg.thumbnail).toString('base64'),\n                    \"thumbnail_ms\": msg.thumbnail_ms,\n                    \"mjpeg_process_ms\":0\n                },\n                \"annotated\": {\n                    \"image\": \"\",\n                    \"objectname\": datasource + \"-\" + random_name+ \"_annotated\"+file_extension,\n                    \"thumbnail\": \"\",\n                    \"thumbnail_ms\":0,\n                    \"annotation_ms\":0,\n                    \"total_ms\":0\n                }\n            }\n        },\n        \"computer_vision\": {\n            \"type\": \"\",\n            \"model\": \"\",\n            \"inference_time\": \"\",\n            \"result\": \"\"\n        }\n    }\n}\n\ndelete msg.settings;\ndelete msg.width;\ndelete msg.height;\ndelete msg.type;\ndelete msg.exif;\ndelete msg.thumbnail;\ndelete msg.utc_timestamp;\ndelete msg.local_timestamp;\ndelete msg.unix_timestamp;\ndelete msg.start;\ndelete msg.thumbnail_ms;\ndelete msg.datasource;\ndelete msg.random_name;\ndelete msg.file_extension;\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [
+            {
+                "var": "uuid",
+                "module": "uuid"
+            }
+        ],
+        "x": 840,
+        "y": 520,
+        "wires": [
+            [
+                "dcd82181b79268fa"
+            ]
+        ]
+    },
+    {
+        "id": "71d80411eeec75ec",
+        "type": "change",
+        "z": "dc2b46484141f051",
+        "name": "timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "start",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 350,
+        "y": 460,
+        "wires": [
+            [
+                "47ad959e399127ee"
+            ]
+        ]
+    },
+    {
+        "id": "a29e56924f3c4b62",
+        "type": "change",
+        "z": "dc2b46484141f051",
+        "name": "end timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "thumbnail_ms",
+                "pt": "msg",
+                "to": "$millis() - msg.start",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 820,
+        "y": 460,
+        "wires": [
+            [
+                "98e82be483a95bdd"
+            ]
+        ]
+    },
+    {
+        "id": "f2fcd32368f15a5a",
+        "type": "change",
+        "z": "dc2b46484141f051",
+        "name": "timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "process_start",
+                "pt": "msg",
+                "to": "",
+                "tot": "date"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 490,
+        "y": 140,
+        "wires": [
+            [
+                "8521dc3a9bb265e4"
+            ]
+        ]
+    },
+    {
+        "id": "dcd82181b79268fa",
+        "type": "change",
+        "z": "dc2b46484141f051",
+        "name": "end timer",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.properties.object.data.original.mjpeg_process_ms",
+                "pt": "msg",
+                "to": "$millis() - msg.process_start",
+                "tot": "jsonata"
+            },
+            {
+                "t": "delete",
+                "p": "process_start",
+                "pt": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 820,
+        "y": 580,
+        "wires": [
+            [
+                "03ba536e0dc79eeb"
+            ]
+        ]
+    },
+    {
+        "id": "fd80c13b0ff9de2b",
+        "type": "split",
+        "z": "dc2b46484141f051",
+        "name": "",
+        "splt": "[255, 216, 255]",
+        "spltType": "bin",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": true,
+        "addname": "",
+        "x": 370,
+        "y": 80,
+        "wires": [
+            [
+                "c0640f9b19b6ea45"
+            ]
+        ]
+    },
+    {
+        "id": "c0640f9b19b6ea45",
+        "type": "function",
+        "z": "dc2b46484141f051",
+        "name": "Join",
+        "func": "let header = Buffer.from(msg.parts.ch);\nlet image = Buffer.from(msg.payload);\nlet arr = [header,image]\nmsg.payload = Buffer.concat(arr)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 80,
+        "wires": [
+            [
+                "f2fcd32368f15a5a"
+            ]
+        ]
+    },
+    {
+        "id": "03ba536e0dc79eeb",
+        "type": "msg-speed",
+        "z": "dc2b46484141f051",
+        "name": "images",
+        "frequency": "sec",
+        "interval": 1,
+        "estimation": false,
+        "ignore": false,
+        "pauseAtStartup": false,
+        "topicDependent": false,
+        "x": 980,
+        "y": 580,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "955eeab05409cd61",
+        "type": "switch",
+        "z": "dc2b46484141f051",
+        "name": "is_stream?",
+        "property": "is_stream",
+        "propertyType": "env",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 210,
+        "y": 100,
+        "wires": [
+            [
+                "fd80c13b0ff9de2b"
+            ],
+            [
+                "f2fcd32368f15a5a"
+            ]
+        ]
+    },
+    {
+        "id": "47ad959e399127ee",
+        "type": "function",
+        "z": "dc2b46484141f051",
+        "name": "Create thumbnail",
+        "func": "async function resize(inputTensor, width, height) {\n    return tf.tidy(() => {\n        let resized = tf.image.resizeBilinear(inputTensor, [height, width])\n        resized = tf.reshape(resized, [height, width, 3])\n        return Promise.resolve(tf.node.encodeJpeg(resized));\n    });\n}\n\nasync function convert(input) {\n    return tf.tidy(() => {\n        const tensor = tf.node.decodeJpeg(input, 3).expandDims(0);\n        const shape = tensor.shape;\n        return tensor\n    });\n}\n\ntry{\n    let thumbnail_time_ms;\n    const image = msg.payload;\n    const start = Date.now();\n    const width = env.get(\"width\")\n    const height = env.get(\"height\")\n    const tensor = await convert(image)\n    const thumbnail = Buffer.from(await resize(tensor, width, height))\n    msg.thumbnail = thumbnail\n    thumbnail_time_ms = Date.now() - start;\n    msg.thumbnail_ms = thumbnail_time_ms;\n    node.status({ fill: \"green\", shape: \"dot\", text: thumbnail_time_ms + \" ms\" });\n    return msg;\n}\ncatch (e) {\n    node.warn(e)\n    node.status({ fill: \"red\", shape: \"dot\", text: \"Convert failed...\" });\n    node.error(\"Resizing failed. Probably input is not an image buffer.\", msg);\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "// Code added here will be run when the\n// node is being stopped or re-deployed.\nconst model = context.get(\"savedmodel\")\ntf.dispose(model)\ncontext.set(\"model\", undefined)\ncontext.set(\"modelInfo\", undefined)",
+        "libs": [
+            {
+                "var": "tf",
+                "module": "@tensorflow/tfjs-node-gpu"
+            }
+        ],
+        "x": 550,
+        "y": 460,
+        "wires": [
+            [
+                "a29e56924f3c4b62"
+            ]
+        ]
+    },
+    {
+        "id": "6cbef0c4aae025a4",
+        "type": "subflow:dc2b46484141f051",
+        "z": "7b248573a2bd55b0",
+        "name": "",
+        "x": 320,
+        "y": 160,
+        "wires": [
+            [
+                "7c0e65c7e9eee788",
+                "19e0404aa868ddef"
+            ]
+        ]
+    }
+]
