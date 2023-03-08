@@ -19,7 +19,7 @@
         "out": [
             {
                 "x": 960,
-                "y": 480,
+                "y": 560,
                 "wires": [
                     {
                         "id": "12d8ae0ea491e9a0",
@@ -120,7 +120,7 @@
         "icon": "font-awesome/fa-image",
         "status": {
             "x": 780,
-            "y": 540,
+            "y": 620,
             "wires": [
                 {
                     "id": "60ec2a93984204ab",
@@ -241,7 +241,7 @@
             "12d8ae0ea491e9a0"
         ],
         "x": 600,
-        "y": 540,
+        "y": 620,
         "wires": [
             []
         ]
@@ -263,7 +263,7 @@
             }
         ],
         "x": 620,
-        "y": 400,
+        "y": 480,
         "wires": [
             [
                 "076a7ba600a74172"
@@ -317,7 +317,7 @@
         "to": "",
         "reg": false,
         "x": 600,
-        "y": 340,
+        "y": 420,
         "wires": [
             [
                 "ea440527ead07455"
@@ -356,7 +356,7 @@
         "type": "function",
         "z": "e3fbd4fc9e88e8f9",
         "name": "resize",
-        "func": "let input = msg.payload;\nlet width = env.get(\"thumbnail_width\")\nlet create_thumbnail = env.get(\"thumbnail\")\nlet thumbnail;\n\nif (create_thumbnail){\n  thumbnail = await sharp(input)\n    .metadata()\n    .then(({ width }) => sharp(input)\n      .resize({ width: width })\n      .toBuffer()\n  );\n\n  \n}\nelse{\n  thumbnail = []\n}\nmsg.thumbnail = thumbnail\nreturn msg;",
+        "func": "let input = msg.payload;\nlet width = env.get(\"thumbnail_width\")\nlet create_thumbnail = env.get(\"thumbnail\")\nlet thumbnail;\n\nif (create_thumbnail){\n  thumbnail = await sharp(input)\n    .metadata()\n    .then(({ width }) => sharp(input)\n      .resize({ width: width })\n      .toBuffer()\n  );\n\n}\nelse{\n  thumbnail = []\n}\nmsg.thumbnail = thumbnail\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -368,7 +368,7 @@
             }
         ],
         "x": 450,
-        "y": 340,
+        "y": 420,
         "wires": [
             [
                 "ead3da8c080b3d6a"
@@ -400,7 +400,7 @@
         "to": "",
         "reg": false,
         "x": 600,
-        "y": 460,
+        "y": 540,
         "wires": [
             [
                 "12d8ae0ea491e9a0"
@@ -457,7 +457,7 @@
         "pauseAtStartup": false,
         "topicDependent": false,
         "x": 760,
-        "y": 460,
+        "y": 540,
         "wires": [
             [],
             []
@@ -489,36 +489,6 @@
             ],
             [
                 "707ecedadab6f041"
-            ]
-        ]
-    },
-    {
-        "id": "9e7c348f7576f624",
-        "type": "subflow:e3fbd4fc9e88e8f9",
-        "z": "022e42e3f5d0335d",
-        "name": "Parse JPEG",
-        "env": [
-            {
-                "name": "is_stream",
-                "value": "false",
-                "type": "bool"
-            },
-            {
-                "name": "thumbnail",
-                "value": "false",
-                "type": "bool"
-            },
-            {
-                "name": "thumbnail_width",
-                "value": "50",
-                "type": "num"
-            }
-        ],
-        "x": 330,
-        "y": 140,
-        "wires": [
-            [
-                "147fe8b05b70ef10"
             ]
         ]
     }

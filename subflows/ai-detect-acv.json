@@ -3,11 +3,11 @@
         "id": "f5489383c48b7546",
         "type": "subflow",
         "name": "[AI] Detect-acv",
-        "info": "Make prediction on image with Tensorflow.js model trained and exported from Microsoft Azure Custom Vision.\n\nInput image must be image buffer in **'msg.payload'**.\n\nModel is loaded from configured folder.\n\nInference image and add result to output message. \n\nCalculates approximation of length in centimeters of detected object(s) based on given **image_width_cm**. \n\nParameter **image_width_cm** can be set in 'settings.js'-file separately for each msg.topic (datasource id).\n\nFor example:\n\n`process.env.image_width_cm = JSON.stringify({\"10\":130,\"11\":130,\"20\":130,\"21\":130});`\n\n`{\n    { msg.topic:image width [cm] },\n    { msg.topic:image width [cm] }\n}`\n\n\nBasic image info and exif is added to output message, if available.\n\nTo train and exmport a model, please look:\n\nhttps://www.customvision.ai/\n",
+        "info": "Make prediction on image with Tensorflow.js model trained and exported from Microsoft Azure Custom Vision.\n\nInput image must be image buffer in **'msg.payload'**.\n\nModel is loaded from configured folder.\n\nInference image and add result to output message. \n\nTo train and exmport a model, please look:\n\nhttps://www.customvision.ai/\n",
         "category": "Tequ-API Client",
         "in": [
             {
-                "x": 60,
+                "x": 80,
                 "y": 80,
                 "wires": [
                     {
@@ -18,11 +18,11 @@
         ],
         "out": [
             {
-                "x": 980,
-                "y": 380,
+                "x": 700,
+                "y": 80,
                 "wires": [
                     {
-                        "id": "70f48281642455fa",
+                        "id": "b2e07a6cce1a9b6e",
                         "port": 0
                     }
                 ]
@@ -55,17 +55,9 @@
                 }
             },
             {
-                "name": "image_width_cm",
-                "type": "num",
-                "value": "130",
-                "ui": {
-                    "type": "input",
-                    "opts": {
-                        "types": [
-                            "num"
-                        ]
-                    }
-                }
+                "name": "model_id",
+                "type": "str",
+                "value": "tequ-hissitproto-v1"
             }
         ],
         "meta": {
@@ -78,8 +70,8 @@
         "color": "#FFCC66",
         "icon": "node-red/status.svg",
         "status": {
-            "x": 980,
-            "y": 460,
+            "x": 700,
+            "y": 140,
             "wires": [
                 {
                     "id": "e220d68131d1bea3",
@@ -93,10 +85,10 @@
         "type": "function",
         "z": "f5489383c48b7546",
         "name": "customvision",
-        "func": "var imageBuffer = msg.payload;\nvar results = [];\nvar labels = context.get(\"labels\");\nvar threshold = msg.threshold;\nvar image_width = msg.width;\nvar image_height = msg.height;\nvar newResult;\nvar px_in_cm;\nvar object_size_cm;\nvar result_message;\n\n//Make prediction on input image\nlet model = context.get(\"model\")\nlet result = await model.executeAsync(imageBuffer);\n\n\n\n//Map result to JSON and connect label names\nvar bboxes = result[0];\nvar scores = result[1];\nvar label_idxs = result[2];\n\nfor(var i=0;i<bboxes.length;i++){\n    if(scores[i] >= threshold){\n        newResult = {\n            \"bbox\":[\n                bboxes[i][0] * image_width,\n                bboxes[i][1] * image_height,\n                (bboxes[i][2] - bboxes[i][0]) * image_width,\n                (bboxes[i][3] - bboxes[i][1]) * image_height\n            ],\n            \"class\":labels[label_idxs[i]],\n            \"label\":labels[label_idxs[i]],\n            \"score\":scores[i]\n        }\n        results.push(newResult)\n    }\n}\n\n//Calculate object width if image_width_cm is given input message\nif(\"image_width_cm\" in msg){\n    var image_width_cm = msg.image_width_cm;\n\n    for(var j=0;j<results.length;j++){\n        px_in_cm = image_width_cm / msg.width\n        object_size_cm = px_in_cm * results[j].bbox[2]\n        results[j].length_cm = Math.round(object_size_cm)\n    }\n}\n\n// Create output message\nresult_message = {\n    \"start\":msg.start,\n    \"labels\":context.get(\"labels\"),\n    \"originalResult\":result,\n    \"thresholdType\":msg.thresholdType,\n    \"threshold\": msg.threshold,\n    \"image_width_cm\":msg.image_width_cm,\n    \"image_width_cm_type\":msg.image_width_cm_type,\n    \"topic\":msg.topic,\n    \"payload\":{\n        \"inference\":{\n            \"metadata\":context.get(\"metadata\"),\n            \"manifest\":context.get(\"manifest\"),\n            \"time_ms\":0,\n            \"result\":results,\n            \"model\":env.get(\"inference_model_id\"),\n            \"type\":\"object detection\"\n        },\n        \"image\":{\n            \"buffer\":imageBuffer,\n            \"width\": msg.width,\n            \"height\": msg.height,\n            \"type\": msg.type,\n            \"size\": (imageBuffer).length,\n            \"exif\":{}\n        }\n    }\n}\n\n// Add exif information\nif(msg.exif){\n     result_message.payload.image.exif = msg.exif\n}\n\nreturn result_message;",
+        "func": "let start = Date.now();\nvar imageBuffer = msg.payload;\nvar results = [];\nvar labels = context.get(\"labels\");\nvar threshold = msg.threshold;\nlet image_width = msg.data.properties.object.data.width;\nlet image_height = msg.data.properties.object.data.height;\nvar newResult;\nvar result_message;\n\n//Make prediction on input image\nlet model = context.get(\"model\")\nlet result = await model.executeAsync(imageBuffer);\n\nlet end = Date.now();\nlet diff = end - start;\n\n//Map result to JSON and connect label names\nvar bboxes = result[0];\nvar scores = result[1];\nvar label_idxs = result[2];\n\nfor(var i=0;i<bboxes.length;i++){\n    if(scores[i] >= threshold){\n        newResult = {\n            \"bbox\":[\n                bboxes[i][0] * image_width,\n                bboxes[i][1] * image_height,\n                (bboxes[i][2] - bboxes[i][0]) * image_width,\n                (bboxes[i][3] - bboxes[i][1]) * image_height\n            ],\n            \"class\":labels[label_idxs[i]],\n            \"label\":labels[label_idxs[i]],\n            \"score\":scores[i]\n        }\n        results.push(newResult)\n    }\n}\n\nmsg.data.properties.computer_vision.result = results;\nmsg.data.properties.computer_vision.type = \"object detection\";\nmsg.data.properties.computer_vision.threshold = threshold;\nmsg.data.properties.computer_vision.inference_time = diff;\nmsg.data.properties.computer_vision.model = env.get(\"model_id\");\nmsg.data.properties.computer_vision.metadata = context.get(\"metadata\");\nmsg.data.properties.computer_vision.manifest = context.get(\"manifest\");\nmsg.data.properties.computer_vision.labels = context.get(\"labels\");\nmsg.payload = imageBuffer;\nnode.status({ fill: \"blue\", shape: \"dot\", text: diff + \" ms\" });  \nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "initialize": "// Code added here will be run once\n// whenever the node is started.\nconst platform = os.platform()\nnode.warn(platform)\nlet model_folder;\nlet manifest_file;\nlet LabelFileName;\nlet ModelFileName;\nlet MetadataPropsFileName;\nlet labelArray;\n\nif(platform == \"win32\"){\n    model_folder = env.get(\"model_folder\")\n    manifest_file = model_folder+\"\\\\\"+\"cvexport.manifest\"\n}\nelse{\n    model_folder = env.get(\"model_folder\")\n    manifest_file = model_folder+\"/\"+\"cvexport.manifest\"\n}\n\nif (context.get(\"model\") === undefined) {\n    try {\n        context.set(\"manifest\",JSON.parse(fs.readFileSync(manifest_file, 'utf8')))\n    } catch (err) {\n        node.error(err)\n    }\n}\n\nif(platform == \"win32\"){\n    LabelFileName           = model_folder+\"\\\\\"+context.get(\"manifest\")[\"LabelFileName\"]\n    ModelFileName           = \"file://\"+model_folder+\"\\\\\"+\"model.json\"\n    MetadataPropsFileName   = model_folder+\"\\\\\"+context.get(\"manifest\")[\"MetadataPropsFileName\"]\n}\nelse{\n    LabelFileName           = model_folder+\"/\"+context.get(\"manifest\")[\"LabelFileName\"]\n    ModelFileName           = \"file://\"+model_folder+\"/\"+\"model.json\"\n    MetadataPropsFileName   = model_folder+\"/\"+context.get(\"manifest\")[\"MetadataPropsFileName\"]\n}\n\n//node.warn(LabelFileName)\n//node.warn(ModelFileName)\n//node.warn(MetadataPropsFileName)\n\nif (context.get(\"labels\") === undefined) {\n    try {\n        var labels = fs.readFileSync(LabelFileName, 'utf8')\n        labelArray = labels.split(\"\\n\")\n        context.set(\"labels\",labelArray)\n        \n    } catch (err) {\n        node.error(\"Error reading labels\",err)\n    }\n}\n\nif (context.get(\"metadata\") === undefined) {\n    try {\n        context.set(\"metadata\",JSON.parse(fs.readFileSync(MetadataPropsFileName, 'utf8')))\n    } catch (err) {\n        node.error(\"Error reading metadata\",err)\n    }\n}\n\nif (context.get(\"model\") === undefined) {\n    try {\n        node.status({fill:\"green\",shape:\"dot\",text:\"Loading model...\"});\n        const model = new microsoftCustomvisionTfjsNode.ObjectDetectionModel();\n        await model.loadModelAsync(ModelFileName);\n        context.set(\"model\", model)\n        node.status({fill:\"green\",shape:\"dot\",text:\"Object detection ready.\"});\n    } catch (err) {\n        node.status({fill:\"red\",shape:\"dot\",text:err});\n        node.error(\"Error reading model\",err)\n    }\n}\n\nnode.warn(tf.getBackend())\n",
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nconst platform = os.platform()\nnode.warn(platform)\nlet model_folder;\nlet manifest_file;\nlet LabelFileName;\nlet ModelFileName;\nlet MetadataPropsFileName;\nlet labelArray;\n\nif(platform == \"win32\"){\n    model_folder = env.get(\"model_folder\")\n    manifest_file = model_folder+\"\\\\\"+\"cvexport.manifest\"\n}\nelse{\n    model_folder = env.get(\"model_folder\")\n    manifest_file = model_folder+\"/\"+\"cvexport.manifest\"\n}\n\nif (context.get(\"model\") === undefined) {\n    try {\n        context.set(\"manifest\",JSON.parse(fs.readFileSync(manifest_file, 'utf8')))\n    } catch (err) {\n        node.error(err)\n    }\n}\n\nif(platform == \"win32\"){\n    LabelFileName           = model_folder+\"\\\\\"+context.get(\"manifest\")[\"LabelFileName\"]\n    ModelFileName           = \"file://\"+model_folder+\"\\\\\"+\"model.json\"\n    MetadataPropsFileName   = model_folder+\"\\\\\"+context.get(\"manifest\")[\"MetadataPropsFileName\"]\n}\nelse{\n    LabelFileName           = model_folder+\"/\"+context.get(\"manifest\")[\"LabelFileName\"]\n    ModelFileName           = \"file://\"+model_folder+\"/\"+\"model.json\"\n    MetadataPropsFileName   = model_folder+\"/\"+context.get(\"manifest\")[\"MetadataPropsFileName\"]\n}\n\n//node.warn(LabelFileName)\n//node.warn(ModelFileName)\n//node.warn(MetadataPropsFileName)\n\nif (context.get(\"labels\") === undefined) {\n    try {\n        var labels = fs.readFileSync(LabelFileName, 'utf8')\n        labelArray = labels.split(\"\\n\")\n        context.set(\"labels\",labelArray)\n        \n    } catch (err) {\n        node.warn(err)\n        node.error(\"Error reading labels: \"+err.message,err)\n    }\n}\n\nif (context.get(\"metadata\") === undefined) {\n    try {\n        context.set(\"metadata\",JSON.parse(fs.readFileSync(MetadataPropsFileName, 'utf8')))\n    } catch (err) {\n        node.error(\"Error reading metadata: \"+err.message,err)\n    }\n}\n\nif (context.get(\"model\") === undefined) {\n    try {\n        node.status({fill:\"green\",shape:\"dot\",text:\"Loading model...\"});\n        const model = new microsoftCustomvisionTfjsNode.ObjectDetectionModel();\n        await model.loadModelAsync(ModelFileName);\n        context.set(\"model\", model)\n        node.status({fill:\"green\",shape:\"dot\",text:\"Object detection ready.\"});\n    } catch (err) {\n        node.status({fill:\"red\",shape:\"dot\",text:err});\n        node.error(\"Error reading model: \" + err.message, err)\n    }\n}\n\n//node.warn(tf.getBackend())\n",
         "finalize": "",
         "libs": [
             {
@@ -110,115 +102,27 @@
             {
                 "var": "os",
                 "module": "os"
-            },
-            {
-                "var": "tf",
-                "module": "@tensorflow/tfjs-node-gpu"
             }
         ],
-        "x": 530,
-        "y": 380,
+        "x": 550,
+        "y": 80,
         "wires": [
-            [
-                "5f405028d59497da"
-            ]
-        ]
-    },
-    {
-        "id": "c25b00fd941b95b8",
-        "type": "change",
-        "z": "f5489383c48b7546",
-        "name": "timer",
-        "rules": [
-            {
-                "t": "set",
-                "p": "start",
-                "pt": "msg",
-                "to": "",
-                "tot": "date"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 190,
-        "y": 160,
-        "wires": [
-            [
-                "f93f094154f19d8a"
-            ]
-        ]
-    },
-    {
-        "id": "5f405028d59497da",
-        "type": "change",
-        "z": "f5489383c48b7546",
-        "name": "end timer",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload.inference.time_ms",
-                "pt": "msg",
-                "to": "$millis() - msg.start",
-                "tot": "jsonata"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 700,
-        "y": 380,
-        "wires": [
-            [
-                "70f48281642455fa"
-            ]
-        ]
-    },
-    {
-        "id": "f93f094154f19d8a",
-        "type": "image-info",
-        "z": "f5489383c48b7546",
-        "name": "",
-        "x": 210,
-        "y": 240,
-        "wires": [
-            [
-                "9ed9b3aecaea1658"
-            ]
-        ]
-    },
-    {
-        "id": "9ed9b3aecaea1658",
-        "type": "exif",
-        "z": "f5489383c48b7546",
-        "name": "",
-        "mode": "normal",
-        "property": "payload",
-        "x": 190,
-        "y": 320,
-        "wires": [
-            [
-                "c43ad9454285328e"
-            ]
+            []
         ]
     },
     {
         "id": "c43ad9454285328e",
         "type": "function",
         "z": "f5489383c48b7546",
-        "name": "Set threshold & image_width_cm",
-        "func": "//Define threshold\nvar threshold = 0;\n\nglobal_settings = global.get(\"settings\") || undefined\nvar thresholdType = \"\"\n\nif(global_settings !== undefined){\n    if(\"threshold\" in global_settings){\n        threshold = global_settings[\"threshold\"]\n        thresholdType = \"global\";\n    }\n}\n\nelse if(\"threshold\" in msg){\n    threshold = msg.threshold;\n    thresholdType = \"msg\";\n    if(threshold < 0){\n        threshold = 0\n    }\n    else if(threshold > 1){\n        threshold = 1\n    }\n}\n\nelse{\n    try{\n        threshold = env.get(\"threshold\");\n        thresholdType = \"env\";\n    }\n    catch(err){\n        threshold = 0.5\n        thresholdType = \"default\";\n    }\n}\n\n\ntry{\n    image_width_cm_type = \"env\";\n    image_width_cm = JSON.parse(env.get(\"image_width_cm\"))[msg.topic];\n        \n}\ncatch(err){\n    image_width_cm = 130\n    image_width_cm_type = \"default\";\n}\n\n\nif(threshold == undefined){\n    threshold = 0\n}\n\nmsg.thresholdType = thresholdType;\nmsg.threshold = threshold;\nmsg.image_width_cm = image_width_cm;\nmsg.image_width_cm_type = image_width_cm_type;\n//node.status({fill:\"green\",shape:\"dot\",text:\"threshold: \"+threshold+\" | Image width: \"+image_width_cm});\nreturn msg;",
+        "name": "Set threshold",
+        "func": "//Define threshold\nvar threshold = 0;\n\nlet global_settings = global.get(\"settings\") || undefined\nvar thresholdType = \"\"\n\nif(global_settings !== undefined){\n    if(\"threshold\" in global_settings){\n        threshold = global_settings[\"threshold\"]\n        thresholdType = \"global\";\n    }\n}\n\nelse if(\"threshold\" in msg){\n    threshold = msg.threshold;\n    thresholdType = \"msg\";\n    if(threshold < 0){\n        threshold = 0\n    }\n    else if(threshold > 1){\n        threshold = 1\n    }\n}\n\nelse{\n    try{\n        threshold = env.get(\"threshold\");\n        thresholdType = \"env\";\n    }\n    catch(err){\n        threshold = 0.5\n        thresholdType = \"default\";\n    }\n}\n\nif(threshold == undefined){\n    threshold = 0\n}\n\nmsg.thresholdType = thresholdType;\nmsg.threshold = threshold;\n//node.status({fill:\"green\",shape:\"dot\",text:\"threshold: \"+threshold+\" | Image width: \"+image_width_cm});\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 280,
-        "y": 380,
+        "x": 370,
+        "y": 80,
         "wires": [
             [
                 "b2e07a6cce1a9b6e"
@@ -230,7 +134,7 @@
         "type": "function",
         "z": "f5489383c48b7546",
         "name": "isBuffer?",
-        "func": "timestamp = new Date().toISOString();\nvar image = msg.payload;\n\nif(Buffer.isBuffer(image)){\n    //node.status({fill:\"green\",shape:\"dot\",text:timestamp + \" OK\"});  \n    return msg;\n}\nelse{\n    node.error(\"msg.payload is not an image buffer\",msg)\n    node.status({fill:\"red\",shape:\"dot\",text:timestamp + \" msg.payload is not an image buffer\"});  \n}",
+        "func": "let timestamp = new Date().toISOString();\nvar image = msg.payload;\n\nif(Buffer.isBuffer(image)){\n    //node.status({fill:\"green\",shape:\"dot\",text:timestamp + \" OK\"});  \n    return msg;\n}\nelse{\n    node.error(\"msg.payload is not an image buffer\",msg)\n    node.status({fill:\"red\",shape:\"dot\",text:timestamp + \" msg.payload is not an image buffer\"});  \n}",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -240,7 +144,7 @@
         "y": 80,
         "wires": [
             [
-                "c25b00fd941b95b8"
+                "c43ad9454285328e"
             ]
         ]
     },
@@ -253,25 +157,8 @@
             "b2e07a6cce1a9b6e",
             "70f48281642455fa"
         ],
-        "x": 860,
-        "y": 460,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "70f48281642455fa",
-        "type": "function",
-        "z": "f5489383c48b7546",
-        "name": "",
-        "func": "node.status({fill:\"blue\",shape:\"dot\",text:msg.payload.inference.time_ms+\" ms\"});  \nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 860,
-        "y": 380,
+        "x": 560,
+        "y": 140,
         "wires": [
             []
         ]
@@ -279,25 +166,31 @@
     {
         "id": "7c0e65c7e9eee788",
         "type": "subflow:f5489383c48b7546",
-        "z": "88f8f06219122b1d",
+        "z": "7b248573a2bd55b0",
         "name": "",
         "env": [
             {
                 "name": "model_folder",
-                "value": "/home/tequ/.node-red/customvision",
+                "value": "C:\\Users\\juha.autioniemi\\.node-red\\customvision",
                 "type": "str"
             },
             {
                 "name": "threshold",
-                "value": "0.61",
+                "value": "0.1",
+                "type": "num"
+            },
+            {
+                "name": "image_width_cm",
+                "value": "100",
                 "type": "num"
             }
         ],
-        "x": 460,
-        "y": 600,
+        "x": 540,
+        "y": 160,
         "wires": [
             [
-                "09d970d0f8fea882"
+                "13ae01d7fbd105ae",
+                "aedcd756d4262c2e"
             ]
         ]
     }
